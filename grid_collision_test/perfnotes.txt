@@ -1,0 +1,16 @@
+Performance notes for "--test" mode with given number of objects at BASE_SIZE 1.
+
+
+
+2x700mhz P3 Xeon Linux:
+
+128 == 0m11.668s
+256 == 0m30.077s
+512 == 1m20.613s
+1024 == 3m59.360s
+
+1200mhz G4 iBook OSX:
+
+256 == 0m15.970s
+512 == 0m42.200s
+1024 == 2m0.240s
