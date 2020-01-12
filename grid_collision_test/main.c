@@ -98,7 +98,7 @@ int main(int argc, char *argv[]){
     
     SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
 
-    g_screen = SDL_SetVideoMode(800, 600, 16, g_videoFlags);
+    g_screen = SDL_SetVideoMode(SCREEN_WID, SCREEN_HIG, 16, g_videoFlags);
     if( !g_screen ){
       fprintf(stderr,"ERROR - Failed to set GL video mode: %s.\n",SDL_GetError());
       exit(-1);

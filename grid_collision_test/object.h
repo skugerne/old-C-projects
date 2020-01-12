@@ -54,14 +54,21 @@ enum border_bounce_t {
 //#define LONG_WAY
 #define NUM_OBJ 1024
 #define BASE_SIZE 1
-#define OBJ_SIDES 7
-#define GRAV_BOT_ACC 0.00025
+#define OBJ_MIN_SIDES 4
+#define WORLD_GRAV_ACC 0.00015
 
 #define STAR_GLOW_1 2.0
 #define STAR_GLOW_2 5.0
 #define STAR_POINTS 64
 #define STAR_SIDES 16
 #define STAR_GRAVITY .005
+
+#define WORLD_MIN_X 0.0
+#define WORLD_MAX_X 1024.0
+#define WORLD_WID (WORLD_MAX_X-WORLD_MIN_X)
+#define WORLD_MIN_Y 0.0
+#define WORLD_MAX_Y 768.0
+#define WORLD_HIG (WORLD_MAX_Y-WORLD_MIN_Y)
 
 
 
@@ -73,8 +80,10 @@ extern bool g_showGrid, g_showCM;
 extern unsigned g_colSearchCalls, g_collCalls;
 
 // world options
-extern bool g_gravBot;
+extern bool g_worldGrav;
+extern float g_worldGravDir;
 extern bool g_gravStar;
+extern bool g_elasticCollisions;
 extern border_bounce_t g_borderType;
 
 

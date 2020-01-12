@@ -15,10 +15,10 @@ void initDraw(){
   glBlendFunc(GL_ONE, GL_ONE);
   //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   
-  glViewport(0, 0, 800, 600);
+  glViewport(0, 0, SCREEN_WID, SCREEN_HIG);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(0,800,0,600,-1,1);
+  glOrtho(0, SCREEN_WID, 0, SCREEN_HIG, -1, 1);
 }
 
 
@@ -39,12 +39,12 @@ void draw(){
   char buffer[100];
   
   setTextProps(0.1,1.0,0.7,"nova",18);
-  setTextStart(5.0,600.0);
+  setTextStart(COLUMN_1_X,SCREEN_HIG);
   setTextJust(TEXT_LEFT,TEXT_BOTTOM);
   sprintf(buffer,"FPS: %.1f",g_fps);
   renderText(buffer);
   
-  setTextStart(5.0,600.0 - textHieght());
+  setTextStart(COLUMN_1_X,SCREEN_HIG - textHieght());
   setTextJust(TEXT_LEFT,TEXT_BOTTOM);
   sprintf(buffer,"IPS: %.1f",g_ups);
   renderText(buffer);
@@ -54,22 +54,22 @@ void draw(){
     listStats(&stats);
     
     setTextProps(0.1,0.7,1.0,"nova",18);
-    setTextStart(135.0,600.0);
+    setTextStart(COLUMN_2_X,SCREEN_HIG);
     setTextJust(TEXT_LEFT,TEXT_BOTTOM);
     sprintf(buffer,"NO: %u",stats.numObj);
     renderText(buffer);
     
-    setTextStart(135.0,600.0 - 1*textHieght());
+    setTextStart(COLUMN_2_X,SCREEN_HIG - 1*textHieght());
     setTextJust(TEXT_LEFT,TEXT_BOTTOM);
     sprintf(buffer,"KE: %.2f",stats.kineticEng);
     renderText(buffer);
     
-    setTextStart(135.0,600.0 - 2*textHieght());
+    setTextStart(COLUMN_2_X,SCREEN_HIG - 2*textHieght());
     setTextJust(TEXT_LEFT,TEXT_BOTTOM);
     sprintf(buffer,"MoX: %.2f",stats.inertiaX);
     renderText(buffer);
     
-    setTextStart(135.0,600.0 - 3*textHieght());
+    setTextStart(COLUMN_2_X,SCREEN_HIG - 3*textHieght());
     setTextJust(TEXT_LEFT,TEXT_BOTTOM);
     sprintf(buffer,"MoY: %.2f",stats.inertiaY);
     renderText(buffer);
@@ -93,7 +93,7 @@ void draw(){
   }
   
   setTextProps(0.8,0.8,0.5,"min",12);
-  setTextStart(265.0,600.0);
+  setTextStart(COLUMN_3_X,SCREEN_HIG);
   setTextJust(TEXT_LEFT,TEXT_BOTTOM);
   if( g_showGrid )
     sprintf(buffer,"F1: hide grid");
@@ -101,35 +101,70 @@ void draw(){
     sprintf(buffer,"F1: show grid");
   renderText(buffer);
   
-  setTextStart(395.0,600.0);
+  setTextStart(COLUMN_4_X,SCREEN_HIG);
   setTextJust(TEXT_LEFT,TEXT_BOTTOM);
   sprintf(buffer,"F2: - radius");
   renderText(buffer);
   
-  setTextStart(395.0,600.0 - textHieght());
+  setTextStart(COLUMN_4_X,SCREEN_HIG - textHieght());
   setTextJust(TEXT_LEFT,TEXT_BOTTOM);
   sprintf(buffer,"F3: + radius");
   renderText(buffer);
   
-  setTextStart(395.0,600.0 - 2*textHieght());
+  setTextStart(COLUMN_4_X,SCREEN_HIG - 2*textHieght());
   setTextJust(TEXT_LEFT,TEXT_BOTTOM);
   sprintf(buffer,"F4: - speed");
   renderText(buffer);
   
-  setTextStart(395.0,600.0 - 3*textHieght());
+  setTextStart(COLUMN_4_X,SCREEN_HIG - 3*textHieght());
   setTextJust(TEXT_LEFT,TEXT_BOTTOM);
   sprintf(buffer,"F5: + speed");
   renderText(buffer);
   
-  setTextStart(525.0,600.0);
+  setTextStart(COLUMN_5_X,SCREEN_HIG);
   setTextJust(TEXT_LEFT,TEXT_BOTTOM);
-  if( g_gravBot )
-    sprintf(buffer,"F6: no gravity to bottom");
+  if( g_worldGrav )
+    sprintf(buffer,"F6: no world gravity");
   else
-    sprintf(buffer,"F6: gravity to bottom");
+    sprintf(buffer,"F6: world gravity");
   renderText(buffer);
   
-  setTextStart(525.0,600.0 - textHieght());
+  setTextStart(COLUMN_5_X,SCREEN_HIG - textHieght());
+  setTextJust(TEXT_LEFT,TEXT_BOTTOM);
+  sprintf(buffer,"(gravity angle = %d degrees)", (int)(g_worldGravDir * 360.0 / (M_PI * 2.0)));
+  renderText(buffer);
+  
+  setTextStart(COLUMN_5_X,SCREEN_HIG - 2*textHieght());
+  setTextJust(TEXT_LEFT,TEXT_BOTTOM);
+  sprintf(buffer,"W: gravity to top (270 deg)");
+  renderText(buffer);
+  
+  setTextStart(COLUMN_5_X,SCREEN_HIG - 3*textHieght());
+  setTextJust(TEXT_LEFT,TEXT_BOTTOM);
+  sprintf(buffer,"A: gravity to left (0 deg)");
+  renderText(buffer);
+  
+  setTextStart(COLUMN_5_X,SCREEN_HIG - 4*textHieght());
+  setTextJust(TEXT_LEFT,TEXT_BOTTOM);
+  sprintf(buffer,"S: gravity to bottom (90 deg)");
+  renderText(buffer);
+  
+  setTextStart(COLUMN_5_X,SCREEN_HIG - 5*textHieght());
+  setTextJust(TEXT_LEFT,TEXT_BOTTOM);
+  sprintf(buffer,"D: gravity to right (180 deg)");
+  renderText(buffer);
+  
+  setTextStart(COLUMN_5_X,SCREEN_HIG - 6*textHieght());
+  setTextJust(TEXT_LEFT,TEXT_BOTTOM);
+  sprintf(buffer,"Q: rotate gravity counter-clockwise");
+  renderText(buffer);
+  
+  setTextStart(COLUMN_5_X,SCREEN_HIG - 7*textHieght());
+  setTextJust(TEXT_LEFT,TEXT_BOTTOM);
+  sprintf(buffer,"E: rotate gravity clockwise");
+  renderText(buffer);
+  
+  setTextStart(COLUMN_6_X,SCREEN_HIG);
   setTextJust(TEXT_LEFT,TEXT_BOTTOM);
   if( g_gravStar )
     sprintf(buffer,"F7: no gravity to star");
@@ -137,14 +172,22 @@ void draw(){
     sprintf(buffer,"F7: gravity to star");
   renderText(buffer);
   
-  setTextStart(525.0,600.0 - 2*textHieght());
+  setTextStart(COLUMN_6_X,SCREEN_HIG - 1*textHieght());
+  setTextJust(TEXT_LEFT,TEXT_BOTTOM);
+  if( g_elasticCollisions )
+    sprintf(buffer,"F8: inelastic collisions");
+  else
+    sprintf(buffer,"F8: elastic collisions");
+  renderText(buffer);
+  
+  setTextStart(COLUMN_6_X,SCREEN_HIG - 2*textHieght());
   setTextJust(TEXT_LEFT,TEXT_BOTTOM);
   if( g_borderType == BORDER_BOUNCE )
-    sprintf(buffer,"F8: border wrap");
+    sprintf(buffer,"F9: border wrap");
   else if( g_borderType == BORDER_WRAP )
-    sprintf(buffer,"F8: no border");
+    sprintf(buffer,"F9: no border");
   else
-    sprintf(buffer,"F8: border bounce");
+    sprintf(buffer,"F9: border bounce");
   renderText(buffer);
   
   glDisable(GL_BLEND);
@@ -212,19 +255,46 @@ void handleKeyDown(SDL_KeyboardEvent *key){
       speedChange(1.1333333);
       break;
     case 287:       // F6
-      g_gravBot = !g_gravBot;
+      g_worldGrav = !g_worldGrav;
       break;
     case 288:       // F7
       g_gravStar = !g_gravStar;
       setStar();
       break;
     case 289:       // F8
+      g_elasticCollisions = !g_elasticCollisions;
+      setStar();
+      break;
+    case 290:       // F9
       if( g_borderType == BORDER_BOUNCE ) g_borderType = BORDER_WRAP;
       else if( g_borderType == BORDER_WRAP ) g_borderType = BORDER_OPEN;
       else g_borderType = BORDER_BOUNCE;
       break;
+    case 119:       // w
+      g_worldGravDir = 270.0 * 2.0 * M_PI / 360.0;
+      break;
+    case 97:       // a
+      g_worldGravDir = 0.0;
+      break;
+    case 115:       // s
+      g_worldGravDir = 90.0 * 2.0 * M_PI / 360.0;
+      break;
+    case 100:       // d
+      g_worldGravDir = 180.0 * 2.0 * M_PI / 360.0;
+      break;
+    case 113:       // q
+      g_worldGravDir -= 15.0 * 2.0 * M_PI / 360.0;
+      if(g_worldGravDir < 0.0) g_worldGravDir += 2.0 * M_PI;
+      break;
+    case 101:       // e
+      g_worldGravDir += 15.0 * 2.0 * M_PI / 360.0;
+      if(g_worldGravDir > 2.0 * M_PI) g_worldGravDir -= 2.0 * M_PI;
+      break;
     case 27:        // esc
       setRunning(false);
+      break;
+    default:
+      fprintf(stdout,"Unsupported keycode: %d.\n",keycode);
       break;
   }
 }

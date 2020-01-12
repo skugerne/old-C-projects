@@ -14,6 +14,16 @@
 
 
 //#define TTF_TEST_DEBUG
+#define SCREEN_WID 1024
+#define SCREEN_HIG 768
+
+#define COLUMN_WID 130
+#define COLUMN_1_X 5
+#define COLUMN_2_X (COLUMN_1_X + COLUMN_WID)
+#define COLUMN_3_X (COLUMN_2_X + COLUMN_WID)
+#define COLUMN_4_X (COLUMN_3_X + COLUMN_WID)
+#define COLUMN_5_X (COLUMN_4_X + COLUMN_WID - 20)
+#define COLUMN_6_X (COLUMN_5_X + COLUMN_WID + 70)
 
 
 

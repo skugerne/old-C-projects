@@ -11,8 +11,10 @@ bool g_showGrid, g_showCM;
 unsigned g_colSearchCalls, g_collCalls;
 
 // world options
-bool g_gravBot;
+bool g_worldGrav;
+float g_worldGravDir;
 bool g_gravStar;
+bool g_elasticCollisions;
 border_bounce_t g_borderType;
 
 // local global for numbering objects
@@ -31,8 +33,10 @@ void initObjects(){
   g_colSearchCalls = 0;
   g_collCalls = 0;
   
-  g_gravBot = false;
+  g_worldGrav = false;
+  g_worldGravDir = 24 * (15.0 * (float)rand() / (RAND_MAX+1.0)) * 2 * M_PI / 360;
   g_gravStar = false;
+  g_elasticCollisions = true;
   g_borderType = BORDER_BOUNCE;
   
   srand(0);
@@ -50,8 +54,8 @@ void initObject_t(object_t *oPtr){
   oPtr->id = ++id_counter;
   oPtr->alive = true;
   
-  oPtr->x = 200.0 + 400.0 * (float)rand() / (RAND_MAX+1.0);
-  oPtr->y = 150.0 + 300.0 * (float)rand() / (RAND_MAX+1.0);
+  oPtr->x = WORLD_MIN_X + WORLD_WID * (float)rand() / (RAND_MAX+1.0);
+  oPtr->y = WORLD_MIN_Y + WORLD_HIG * (float)rand() / (RAND_MAX+1.0);
   oPtr->dx = -0.125 + 0.25 * (float)rand() / (RAND_MAX+1.0);
   oPtr->dy = -0.125 + 0.25 * (float)rand() / (RAND_MAX+1.0);
   oPtr->radius = 1.0 + 5.0 * (float)rand() / (RAND_MAX+1.0);
@@ -223,16 +227,18 @@ void drawObject_t(object_t *oPtr){
       glVertex2f(oPtr->radius,0);
     glEnd();
   }else{
+    int numSides = OBJ_MIN_SIDES + (int)oPtr->radius / 2;
+    
     if( oPtr->inCollision == g_timestamp )
       glColor3f(1.0,0.0,0.0);
     else
       glColor3f(0.0,1.0,0.0);
     
     glBegin(GL_LINE_LOOP);
-      for(int i=0;i<OBJ_SIDES;++i){
+      for(int i=0;i<numSides;++i){
         glVertex2f(
-          oPtr->radius * cos( 2 * M_PI * ((float)i / OBJ_SIDES) ),
-          oPtr->radius * sin( 2 * M_PI * ((float)i / OBJ_SIDES) )
+          oPtr->radius * cos( 2 * M_PI * ((float)i / numSides) ),
+          oPtr->radius * sin( 2 * M_PI * ((float)i / numSides) )
         );
       }
     glEnd();
@@ -248,33 +254,34 @@ void updateObject_t(object_t *oPtr){
   if( g_borderType == BORDER_BOUNCE ){
     // bounce off the walls
     
-    if( oPtr->x - oPtr->radius < 0.0 && oPtr->dx < 0.0 )
+    if( oPtr->x - oPtr->radius < WORLD_MIN_X && oPtr->dx < 0.0 )
       oPtr->dx *= -1;
-    else if( oPtr->x + oPtr->radius > 800.0 && oPtr->dx > 0.0 )
+    else if( oPtr->x + oPtr->radius > WORLD_MAX_X && oPtr->dx > 0.0 )
       oPtr->dx *= -1;
-    if( oPtr->y - oPtr->radius < 0.0 && oPtr->dy < 0.0 )
+    if( oPtr->y - oPtr->radius < WORLD_MIN_Y && oPtr->dy < 0.0 )
       oPtr->dy *= -1;
-    else if( oPtr->y + oPtr->radius > 600.0 && oPtr->dy > 0.0 )
+    else if( oPtr->y + oPtr->radius > WORLD_MAX_Y && oPtr->dy > 0.0 )
       oPtr->dy *= -1;
       
   }else if( g_borderType == BORDER_WRAP ){
     // wrap around the sides rather than bounce
     
-    if( oPtr->x + oPtr->radius < 0.0 && oPtr->dx < 0.0 )
-      oPtr->x += 800.0 + 2*oPtr->radius;
-    else if( oPtr->x - oPtr->radius > 800.0 && oPtr->dx > 0.0 )
-      oPtr->x -= 800.0 + 2*oPtr->radius;
-    if( oPtr->y + oPtr->radius < 0.0 && oPtr->dy < 0.0 )
-      oPtr->y += 600.0 + 2*oPtr->radius;
-    else if( oPtr->y - oPtr->radius > 600.0 && oPtr->dy > 0.0 )
-      oPtr->y -= 600.0 + 2*oPtr->radius;
+    if( oPtr->x + oPtr->radius < WORLD_MIN_X && oPtr->dx < 0.0 )
+      oPtr->x += WORLD_WID + 2*oPtr->radius;
+    else if( oPtr->x - oPtr->radius > WORLD_MAX_X && oPtr->dx > 0.0 )
+      oPtr->x -= WORLD_WID + 2*oPtr->radius;
+    if( oPtr->y + oPtr->radius < WORLD_MIN_Y && oPtr->dy < 0.0 )
+      oPtr->y += WORLD_HIG + 2*oPtr->radius;
+    else if( oPtr->y - oPtr->radius > WORLD_MAX_Y && oPtr->dy > 0.0 )
+      oPtr->y -= WORLD_HIG + 2*oPtr->radius;
   }
   
   oPtr->x += oPtr->dx;
   oPtr->y += oPtr->dy;
   
-  if( g_gravBot ){
-    oPtr->dy -= GRAV_BOT_ACC;
+  if( g_worldGrav ){
+    oPtr->dx -= WORLD_GRAV_ACC * cos(g_worldGravDir);
+    oPtr->dy -= WORLD_GRAV_ACC * sin(g_worldGravDir);
   }
   
   if( g_gravStar && g_objects != oPtr ){
@@ -427,6 +434,8 @@ void collide(object_t *obj1, object_t *obj2){
   nullAngle = incomingAngle - centersAngle;
   nullV = dxy * sin(nullAngle);    // non-collision v (relative of course)
   v = dxy * cos(nullAngle);        // collision v, head-on
+
+  if( !g_elasticCollisions ) v *= 0.98;
   
   // one-dimentional elastic collision
   // (solutions to cons of momentum and cons of energy)
