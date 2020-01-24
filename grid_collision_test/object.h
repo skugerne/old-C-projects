@@ -46,11 +46,6 @@ enum border_bounce_t {
 
 #define OBJECT_DEBUG
 
-#define NUM_SECTORS 40
-#define UNDERFLOW_SECTOR 0
-#define OVERFLOW_SECTOR 39
-#define SECTOR_SIZE 16
-
 //#define LONG_WAY
 #define NUM_OBJ 1024
 #define BASE_SIZE 1
@@ -63,17 +58,26 @@ enum border_bounce_t {
 #define STAR_SIDES 16
 #define STAR_GRAVITY .005
 
-#define WORLD_MIN_X 0.0
-#define WORLD_MAX_X 1024.0
+#define WORLD_MIN_X 0
+#define WORLD_MAX_X 800
 #define WORLD_WID (WORLD_MAX_X-WORLD_MIN_X)
-#define WORLD_MIN_Y 0.0
-#define WORLD_MAX_Y 768.0
+#define WORLD_MIN_Y 0
+#define WORLD_MAX_Y 600
 #define WORLD_HIG (WORLD_MAX_Y-WORLD_MIN_Y)
+
+#define SECTOR_SIZE 16
+#define NUM_SECTORS_WID (WORLD_WID/SECTOR_SIZE)
+#define NUM_SECTORS_HIG (WORLD_HIG/SECTOR_SIZE)
+#define UNDERFLOW_SECTOR 0
+#define OVERFLOW_SECTOR_X (NUM_SECTORS_WID-1)
+#define OVERFLOW_SECTOR_Y (NUM_SECTORS_HIG-1)
+#define DRAW_OFFSET_X ((SCREEN_WID-(NUM_SECTORS_WID*SECTOR_SIZE))/2)
+#define DRAW_OFFSET_Y ((SCREEN_HIG-(NUM_SECTORS_HIG*SECTOR_SIZE))/2)
 
 
 
 extern object_t *g_objects;
-extern sector_t g_sectors[NUM_SECTORS][NUM_SECTORS];
+extern sector_t g_sectors[NUM_SECTORS_WID][NUM_SECTORS_HIG];
 
 // display stuff
 extern bool g_showGrid, g_showCM;

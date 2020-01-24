@@ -4,7 +4,7 @@
 
 
 object_t *g_objects;
-sector_t g_sectors[NUM_SECTORS][NUM_SECTORS];
+sector_t g_sectors[NUM_SECTORS_WID][NUM_SECTORS_HIG];
 
 // display stuff
 bool g_showGrid, g_showCM;
@@ -23,9 +23,14 @@ unsigned id_counter;
 
 
 void initObjects(){
+  printf("DRAW_OFFSET_X: %d\n", DRAW_OFFSET_X);
+  printf("DRAW_OFFSET_Y: %d\n", DRAW_OFFSET_Y);
+  printf("NUM_SECTORS_WID: %d\n", NUM_SECTORS_WID);
+  printf("NUM_SECTORS_HIG: %d\n", NUM_SECTORS_HIG);
+
   g_objects = NULL;
-  for(int i=0;i<NUM_SECTORS;++i)
-    for(int j=0;j<NUM_SECTORS;++j)
+  for(int i=0;i<NUM_SECTORS_WID;++i)
+    for(int j=0;j<NUM_SECTORS_HIG;++j)
       g_sectors[i][j].timestamp = 0;
   
   g_showGrid = false;
@@ -158,7 +163,7 @@ void setStar(){
 
 void drawObject_t(object_t *oPtr){
   glPushMatrix();
-  glTranslatef(oPtr->x , oPtr->y , 0.0);
+  glTranslatef(oPtr->x+DRAW_OFFSET_X , oPtr->y+DRAW_OFFSET_Y , 0.0);
   
   if( g_gravStar && oPtr == g_objects ){
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -529,18 +534,18 @@ void engridObject_t(object_t *oPtr){
   // convert x coordinate into a sector index
   int xindex = (int)oPtr->x / SECTOR_SIZE;
   if( xindex < UNDERFLOW_SECTOR ) xindex = UNDERFLOW_SECTOR;
-  if( xindex > OVERFLOW_SECTOR ) xindex = OVERFLOW_SECTOR;
+  if( xindex > OVERFLOW_SECTOR_X ) xindex = OVERFLOW_SECTOR_X;
   
   // convert y coordinate into a sector index
   int yindex = (int)oPtr->y / SECTOR_SIZE;
   if( yindex < UNDERFLOW_SECTOR ) yindex = UNDERFLOW_SECTOR;
-  if( yindex > OVERFLOW_SECTOR ) yindex = OVERFLOW_SECTOR;
+  if( yindex > OVERFLOW_SECTOR_Y ) yindex = OVERFLOW_SECTOR_Y;
   
   // condensed method of safely trying +/- sectors for both x/y coords
   for(int i=-1;i<2;++i)
-    if( xindex+i >= UNDERFLOW_SECTOR && xindex+i <= OVERFLOW_SECTOR )
+    if( xindex+i >= UNDERFLOW_SECTOR && xindex+i <= OVERFLOW_SECTOR_X )
       for(int j=-1;j<2;++j)
-        if( yindex+j >= UNDERFLOW_SECTOR && yindex+j <= OVERFLOW_SECTOR )
+        if( yindex+j >= UNDERFLOW_SECTOR && yindex+j <= OVERFLOW_SECTOR_Y )
           if( g_sectors[xindex+i][yindex+j].timestamp == g_timestamp )
             colSearchObject_t(g_sectors[xindex+i][yindex+j].tree,oPtr);
   
