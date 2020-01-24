@@ -40,8 +40,14 @@ void initObjects(){
   g_borderType = BORDER_BOUNCE;
   
   srand(0);
-  
-  for(int i=0;i<NUM_OBJ;++i){
+
+  addSomeObjects(NUM_OBJ);
+}
+
+
+
+void addSomeObjects(int num){
+  for(int i=0;i<num;++i){
     object_t *oPtr = new object_t;
     initObject_t(oPtr);
     sortObject_t(oPtr);

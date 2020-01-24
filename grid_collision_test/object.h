@@ -89,6 +89,7 @@ extern border_bounce_t g_borderType;
 
 
 void initObjects();
+void addSomeObjects(int);
 void initObject_t(object_t*);
 void sortObject_t(object_t*);
 void radiusChange(float);
