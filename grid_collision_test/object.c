@@ -243,21 +243,26 @@ void drawObject_t(object_t *oPtr){
       glVertex2f(oPtr->radius,0);
     glEnd();
   }else{
-    int numSides = OBJ_MIN_SIDES + (int)oPtr->radius / 2;
-    
     if( oPtr->inCollision == g_timestamp )
       glColor3f(1.0,0.0,0.0);
     else
       glColor3f(0.0,1.0,0.0);
     
-    glBegin(GL_LINE_LOOP);
-      for(int i=0;i<numSides;++i){
-        glVertex2f(
-          oPtr->radius * cos( 2 * M_PI * ((float)i / numSides) ),
-          oPtr->radius * sin( 2 * M_PI * ((float)i / numSides) )
-        );
-      }
-    glEnd();
+    if(oPtr->radius < 1.2){
+      glBegin(GL_POINTS);
+      glVertex2f(0.0,0.0);
+      glEnd();
+    }else{
+      int numSides = OBJ_MIN_SIDES + (int)oPtr->radius / 2;
+      glBegin(GL_LINE_LOOP);
+        for(int i=0;i<numSides;++i){
+          glVertex2f(
+            oPtr->radius * cos( 2 * M_PI * ((float)i / numSides) ),
+            oPtr->radius * sin( 2 * M_PI * ((float)i / numSides) )
+          );
+        }
+      glEnd();
+    }
   }
   
   glPopMatrix();

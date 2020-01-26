@@ -37,7 +37,7 @@ extern int g_videoFlags;
 
 // framerate and update rate stuff
 extern unsigned g_frames, g_updates, g_timestamp;
-extern unsigned g_time, g_secCountStart;
+extern unsigned g_secCountStart;
 extern float g_fps, g_ups;
 
 

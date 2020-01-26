@@ -49,7 +49,7 @@ enum border_bounce_t {
 //#define LONG_WAY
 #define NUM_OBJ 1024
 #define BASE_SIZE 1
-#define OBJ_MIN_SIDES 4
+#define OBJ_MIN_SIDES 3
 #define WORLD_GRAV_ACC 0.00015
 
 #define STAR_GLOW_1 2.0
@@ -58,7 +58,7 @@ enum border_bounce_t {
 #define STAR_SIDES 16
 #define STAR_GRAVITY .005
 
-#define SECTOR_SIZE 16
+#define SECTOR_SIZE 16       // power of 2 will perform slightly better
 #define NUM_SECTORS_WID 63
 #define NUM_SECTORS_HIG 47
 

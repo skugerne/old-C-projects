@@ -13,7 +13,7 @@ int g_videoFlags;
 
 // framerate and update rate stuff
 unsigned g_frames, g_updates, g_timestamp;
-unsigned g_time, g_secCountStart;
+unsigned g_secCountStart;
 float g_fps, g_ups;
 
 // local globals
@@ -38,7 +38,6 @@ void init(){
 
 int delay(){
   unsigned time = SDL_GetTicks();
-  g_time = time;
   
   // so we can know our fps
   if(time / 1000 >= g_secCountStart + 2){
@@ -51,12 +50,13 @@ int delay(){
     g_updates = 0;
   }
   
+  // one iteration per millisecond
   int iterations = time - lastTimestamp;
   lastTimestamp = time;
   
-  if(iterations > 100) return 100;
-  
-  return iterations;
+  // potentially sacrifice some simulation speed to hit 60 FPS
+  // avoid huge batches of simulation loops
+  return iterations > 17 ? 17 : iterations;
 }
 
 
