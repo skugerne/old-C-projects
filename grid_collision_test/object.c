@@ -27,6 +27,11 @@ void initObjects(){
   printf("DRAW_OFFSET_Y: %d\n", DRAW_OFFSET_Y);
   printf("NUM_SECTORS_WID: %d\n", NUM_SECTORS_WID);
   printf("NUM_SECTORS_HIG: %d\n", NUM_SECTORS_HIG);
+  printf("WORLD_WID: %d\n", WORLD_WID);
+  printf("WORLD_HIG: %d\n", WORLD_HIG);
+  printf("SCREEN_WID: %d\n", SCREEN_WID);
+  printf("SCREEN_HIG: %d\n", SCREEN_HIG);
+  printf("SECTOR_SIZE: %d\n", SECTOR_SIZE);
 
   g_objects = NULL;
   for(int i=0;i<NUM_SECTORS_WID;++i)

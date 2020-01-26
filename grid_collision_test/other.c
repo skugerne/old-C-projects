@@ -31,25 +31,23 @@ void draw(){
   glClear(GL_COLOR_BUFFER_BIT);
 
   if( g_showGrid ){
+    glColor4f(0.5,0.2,0,0);
+    glBegin(GL_LINES);
+      for(int coord=DRAW_OFFSET_Y;coord<=(DRAW_OFFSET_Y+NUM_SECTORS_HIG*SECTOR_SIZE);coord+=SECTOR_SIZE){
+        glVertex2i(DRAW_OFFSET_X,coord);
+        glVertex2i(DRAW_OFFSET_X+NUM_SECTORS_WID*SECTOR_SIZE,coord);
+      }
+      for(int coord=DRAW_OFFSET_X;coord<=(DRAW_OFFSET_X+NUM_SECTORS_WID*SECTOR_SIZE);coord+=SECTOR_SIZE){
+        glVertex2i(coord,DRAW_OFFSET_Y);
+        glVertex2i(coord,DRAW_OFFSET_Y+NUM_SECTORS_HIG*SECTOR_SIZE);
+      }
+    glEnd();
     glColor4f(0.5,0.5,0,0);
     glBegin(GL_LINE_LOOP);
       glVertex2i(DRAW_OFFSET_X,DRAW_OFFSET_Y);
       glVertex2i(DRAW_OFFSET_X,DRAW_OFFSET_Y+WORLD_HIG);
       glVertex2i(DRAW_OFFSET_X+WORLD_WID,DRAW_OFFSET_Y+WORLD_HIG);
       glVertex2i(DRAW_OFFSET_X+WORLD_WID,DRAW_OFFSET_Y);
-    glEnd();
-    glColor4f(0.5,0.2,0,0);
-    glBegin(GL_LINES);
-      for(int coord=DRAW_OFFSET_Y;coord<=(DRAW_OFFSET_Y+NUM_SECTORS_HIG*SECTOR_SIZE);coord+=SECTOR_SIZE){
-        printf("coord Y: %d\n", coord);
-    	glVertex2i(DRAW_OFFSET_X,coord);
-        glVertex2i(DRAW_OFFSET_X+NUM_SECTORS_WID*SECTOR_SIZE,coord);
-      }
-      for(int coord=DRAW_OFFSET_X;coord<=(DRAW_OFFSET_X+NUM_SECTORS_WID*SECTOR_SIZE);coord+=SECTOR_SIZE){
-        printf("coord X: %d\n", coord);
-        glVertex2i(coord,DRAW_OFFSET_Y);
-        glVertex2i(coord,DRAW_OFFSET_Y+NUM_SECTORS_HIG*SECTOR_SIZE);
-      }
     glEnd();
   }
   
