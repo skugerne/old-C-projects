@@ -5,12 +5,12 @@
 
 struct object_t {
   unsigned id;
-  bool alive;
+  bool alive;            // death happens when hitting the star, maybe more later
   
   float x,y;
   float dx,dy;
   float radius;
-  unsigned inCollision;  // set equal to g_timestamp if in collision
+  float heat;            // increased by collisions, decreased over time
   
   object_t *less;        // to node at lower coordinate
   object_t *more;        // to node at higher coordinate

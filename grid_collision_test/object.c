@@ -85,7 +85,8 @@ void initObject_t(object_t *oPtr){
   // shortcut for starting them at large sizes for testing
   oPtr->radius *= BASE_SIZE;
   
-  oPtr->inCollision = 0;
+  oPtr->heat = 0.0;
+
   oPtr->prev = NULL;
   oPtr->next = NULL;
 }
@@ -243,10 +244,21 @@ void drawObject_t(object_t *oPtr){
       glVertex2f(oPtr->radius,0);
     glEnd();
   }else{
-    if( oPtr->inCollision == g_timestamp )
-      glColor3f(1.0,0.0,0.0);
-    else
-      glColor3f(0.0,1.0,0.0);
+    if( oPtr->heat > 0.0 ){
+      float v = log2(oPtr->heat+1.0);
+      if( v > 2.0 ){
+        if( v > 3.0 ) v = 3.0;
+        v -= 2.0;
+        glColor3f(1.0,1.0,v);    // white fade to yellow
+      }else if( v > 1.0 ){
+        v -= 1.0;
+        glColor3f(1.0,v,0.0);    // yellow fade to red
+      }else{
+        glColor3f(0.7+v*0.3,0.7-v*0.7,0.7-v*0.7);  // red fade to gray (the default color)
+      }
+    }else{
+      glColor3f(0.7,0.7,0.7);
+    }
     
     if(oPtr->radius < 1.2){
       glBegin(GL_POINTS);
@@ -297,14 +309,23 @@ void updateObject_t(object_t *oPtr){
       oPtr->y -= WORLD_HIG + 2*oPtr->radius;
   }
   
+  // movement
   oPtr->x += oPtr->dx;
   oPtr->y += oPtr->dy;
+
+  // cooldown
+  if( oPtr->heat > 0.0 ){
+    oPtr->heat *= (1.0 - 0.1 / (oPtr->radius*oPtr->radius));
+    if( oPtr->heat < 0.01 ) oPtr->heat = 0.0;
+  }
   
+  // world gravity
   if( g_worldGrav ){
     oPtr->dx -= WORLD_GRAV_ACC * cos(g_worldGravDir);
     oPtr->dy -= WORLD_GRAV_ACC * sin(g_worldGravDir);
   }
   
+  // star gravity
   if( g_gravStar && g_objects != oPtr ){
     float xDist = g_objects->x - oPtr->x;
     float yDist = g_objects->y - oPtr->y;
@@ -389,8 +410,6 @@ unsigned statSum(){
 
 
 void collide(object_t *obj1, object_t *obj2){
-  obj1->inCollision = true;
-  obj2->inCollision = true;
   ++g_collCalls;
   
   if( g_gravStar && obj1 == g_objects ){
@@ -456,7 +475,12 @@ void collide(object_t *obj1, object_t *obj2){
   nullV = dxy * sin(nullAngle);    // non-collision v (relative of course)
   v = dxy * cos(nullAngle);        // collision v, head-on
 
-  if( !g_elasticCollisions ) v *= 0.98;
+  if( !g_elasticCollisions ){
+    v *= 0.98;
+    obj1->heat += fabsf(v * (mass1 + mass2) / mass1);
+    obj2->heat += fabsf(v * (mass1 + mass2) / mass2);  // hmm
+    //printf("heat %f & %f",obj1->heat,obj2->heat);
+  }
   
   // one-dimentional elastic collision
   // (solutions to cons of momentum and cons of energy)
@@ -512,7 +536,8 @@ void entreeObject_t(object_t *oPtr, sector_t *sPtr){
   if( sPtr->timestamp != g_timestamp ){
     // the sector has stale data in it (overwrite it)
     sPtr->tree = oPtr;
-    
+    // mark the sector as having something in it
+    sPtr->timestamp = g_timestamp; 
   }else{
     object_t *nodePtr = sPtr->tree;
     while( 1 ){
@@ -533,9 +558,6 @@ void entreeObject_t(object_t *oPtr, sector_t *sPtr){
       }
     }
   }
-  
-  // mark the sector as having something in it
-  sPtr->timestamp = g_timestamp;
 }
 
 
