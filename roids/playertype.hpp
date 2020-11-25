@@ -61,7 +61,7 @@ class playertype : public objecttype {
     
     int weaponKey[MAX_SHIP_WEAPONS][2];
     int specialKey[MAX_SHIP_SPECIALS][2];
-    double specialLastChanged[5];
+    double specialLastChanged[MAX_SHIP_SPECIALS];
     
     int markerKey[2];
     double markerLastChanged;

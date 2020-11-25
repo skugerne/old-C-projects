@@ -210,7 +210,7 @@ Uchar* playertype::makeCommandString(){
   bool marker = false;
   bool message = false;
   
-  for(int i=0;i<10;++i){
+  for(int i=0;i<NUM_KEYS;++i){
     if(_keys[i] != 0){
       
       if(_keys[i] == engineKey[0] || _keys[i] == engineKey[1])

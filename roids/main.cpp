@@ -180,9 +180,10 @@ int main(int argc, char *argv[]){
   init(); 
   
   _videoFlags  = SDL_OPENGL;
-  _videoFlags |= SDL_DOUBLEBUF;
+  _videoFlags |= SDL_GL_DOUBLEBUFFER;
   
   SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+  SDL_GL_SetAttribute( SDL_GL_SWAP_CONTROL, 1 );
 
   _screen = SDL_SetVideoMode(_physicalX, _physicalY, 16, _videoFlags);
   if(!_screen){
