@@ -320,8 +320,14 @@ void createAlienWanderers(){
 
 void createAlienLuas(){
   objecttype *oPtr;
+
+  float x = _player->x() + 400 - (_time * 13 % 800);
+  if(x > MAX_COORDINATE) x = MAX_COORDINATE-1;
+  if(x < 0) x = 0;
+  float y = _player->y() + 400 - (_time * 27 % 800);
+  if(y > MAX_COORDINATE) y = MAX_COORDINATE-1;
+  if(y < 0) y = 0;
   
-  // some big primes ... http://www.utm.edu/research/primes/lists/small/1000.txt
-  oPtr = new alienluatype( _time * 7717 % MAX_COORDINATE , _time * 4423 % MAX_COORDINATE );
+  oPtr = new alienluatype(x,y);
   oPtr->addToNewList();
 }

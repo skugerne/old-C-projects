@@ -2,6 +2,33 @@
 
 
 
+int luaGlColor3f(lua_State *L){
+  float r = luaL_checknumber(L, 1);
+  float g = luaL_checknumber(L, 2);
+  float b = luaL_checknumber(L, 3);
+  glColor3f(r,g,b);
+  return 1;
+}
+
+int luaGlBegin(lua_State *L){
+  glBegin(GL_LINES);
+  return 1;
+}
+
+int luaGlVertex2i(lua_State *L){
+  float x = luaL_checkinteger(L, 1);
+  float y = luaL_checkinteger(L, 2);
+  glVertex2i(x,y);
+  return 1;
+}
+
+int luaGlEnd(lua_State *L){
+  glEnd();
+  return 1;
+}
+
+
+
 alienluatype::alienluatype(double X, double Y){
   xCoordinate = X;
   yCoordinate = Y;
@@ -36,6 +63,30 @@ alienluatype::alienluatype(double X, double Y){
   
   shieldPoints = 10;
   shieldGlow = 0;
+
+  L = luaL_newstate();
+  luaL_openlibs(L);
+
+  lua_pushcfunction(L, luaGlColor3f);  // push the pointer to our func
+  lua_setglobal(L, "glColor3f");       // make that function into a global
+  lua_pushcfunction(L, luaGlBegin);    // push the pointer to our func
+  lua_setglobal(L, "glBegin");         // make that function into a global
+  lua_pushcfunction(L, luaGlVertex2i); // push the pointer to our func
+  lua_setglobal(L, "glVertex2i");      // make that function into a global
+  lua_pushcfunction(L, luaGlEnd);      // push the pointer to our func
+  lua_setglobal(L, "glEnd");           // make that function into a global
+
+  if (luaL_loadfile(L, "lua_test.lua") == LUA_OK) {
+      if (lua_pcall(L, 0, 1, 0) == LUA_OK) {
+          lua_pop(L, lua_gettop(L));
+      }else{
+          fprintf(stderr,"Seem to have have failed to load the Lua script (item 2).\n");
+          exit(1);
+      }
+  }else{
+      fprintf(stderr,"Seem to have have failed to load the Lua script (item 1).\n");
+      exit(1);
+  }
 }
 
 
@@ -49,19 +100,17 @@ void alienluatype::draw(){
   glTranslatef(xShift , yShift , 0);
   glRotatef(angle , 0.0 , 0.0 , 1.0);
  
-  glColor3f(0,0.3,1);
-  glBegin(GL_LINES);
-    glVertex2i(12,0);
-    glVertex2i(-2,-7);
-    glVertex2i(12,0);
-    glVertex2i(-2,7);
-    glVertex2i(12,0);
-    glVertex2i(-12,0);
- 
-    // sideways line
-    glVertex2i(-2,-7);
-    glVertex2i(-2,7);
-  glEnd();
+  // call out to Lua to draw our alien
+  lua_getglobal(L, "draw");
+  if (lua_isfunction(L, -1)) {
+      if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+          fprintf(stderr,"Failed to call the Lua draw function (item 2).\n");
+          exit(1);
+      }
+  } else {
+      fprintf(stderr,"Failed to call the Lua draw function (item 1).\n");
+      exit(1);
+  }
  
   drawShield(); 
  

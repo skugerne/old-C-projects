@@ -1,6 +1,10 @@
 #ifndef ALIEN_LUA_HH
 #define ALIEN_LUA_HH
 
+#include <lua5.3/lua.h>
+#include <lua5.3/lualib.h>
+#include <lua5.3/lauxlib.h>
+
 
 
 class alienluatype : public alientype {
@@ -23,6 +27,8 @@ class alienluatype : public alientype {
 
     bool weaponOn;
     Uint weaponLastFired;
+
+    lua_State *L;
 };
 
 
