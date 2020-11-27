@@ -14,6 +14,7 @@ class roidtype : public objecttype {
     
     // an input for the effects of collisions
     void collisionEffect(double,objectcollisiontype);
+    void destroy(){return;}
     
     // get functions
     double getWarhead(objectcollisiontype){return 0.0;}

@@ -254,28 +254,7 @@ void shiptype::collisionEffect(double damage, objectcollisiontype what){
   shldStrength -= damage;
   
   if(shldStrength < 0 && !isDead){
-    
-    // we're dead
-    isDead = true;
-    
-    // create some flame
-    for(int i=0;i<20;++i){
-      double speedFactor = 
-        (double)rand() / ( (double)RAND_MAX+1.0 );
-      
-      double tempA =
-        2 * M_PI * ( (double)rand() / ( (double)RAND_MAX+1.0 ) );
-    
-      double particleDX, particleDY;
-    
-      particleDX = xChange - speedFactor * .3 * cos(tempA);
-      particleDY = yChange - speedFactor * .3 * sin(tempA);
-      createFlame(xCoordinate,yCoordinate,particleDX,particleDY);
-    }
-  
-    // create some dust
-    for(int i=0;i<15;++i)
-      createDust(xCoordinate,yCoordinate,xChange,yChange,2);
+    this->destroy();
   }else{
     if(what == COLLIDE_DUST){
       shieldGlow += .1;
@@ -289,6 +268,34 @@ void shiptype::collisionEffect(double damage, objectcollisiontype what){
       if(_player) _player->addShake(3*damage);
     }
   }
+}
+
+
+
+// make the object explode, mark as dead
+void shiptype::destroy(){
+
+  // we're dead
+  isDead = true;
+  
+  // create some flame
+  for(int i=0;i<200;++i){
+    double speedFactor = 
+      10.0 * (double)rand() / ( (double)RAND_MAX+1.0 );
+    
+    double tempA =
+      2 * M_PI * ( (double)rand() / ( (double)RAND_MAX+1.0 ) );
+  
+    double particleDX, particleDY;
+  
+    particleDX = xChange - speedFactor * .3 * cos(tempA);
+    particleDY = yChange - speedFactor * .3 * sin(tempA);
+    createFlame(xCoordinate,yCoordinate,particleDX,particleDY);
+  }
+
+  // create some dust
+  for(int i=0;i<150;++i)
+    createDust(xCoordinate,yCoordinate,xChange,yChange,2);
 }
 
 

@@ -1,6 +1,8 @@
 #ifndef OBJECT_HH
 #define OBJECT_HH
 
+#define INSTANT_DEATH 1000.0   // the most damage that there can be
+
 
 
 // the root class of things that go bump in the night
@@ -15,6 +17,7 @@ class objecttype {
     objecttype virtual *specialUpdate() = 0;
     
     void virtual collisionEffect(double,objectcollisiontype) = 0;
+    void virtual destroy() = 0;
     
     // returns distance from given objecttype
     double distanceFrom(objecttype*);
@@ -43,7 +46,7 @@ class objecttype {
     double* aPtr(){return &angle;}
     double r(){return radius;}
     double m(){return mass;}
-    char* name(){return nameString;}
+    const char* name(){return nameString;}
     double getDetectability(){return detectabilityFactor;}
     double getVisibility(){return visibilityFactor;}
     objectcollisiontype getCollisionMod(){return collisionModifier;}
@@ -78,7 +81,7 @@ class objecttype {
     objecttype *prev;
     objecttype *sectorLess;
     objecttype *sectorMore;
-    char *nameString;
+    const char *nameString;
     
     unsigned int sectorUpdateWhen;
     bool inBounds;

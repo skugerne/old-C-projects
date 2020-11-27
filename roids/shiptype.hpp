@@ -13,6 +13,7 @@ class shiptype : public objecttype {
     
     // an input for the effects of collisions
     void collisionEffect(double,objectcollisiontype);
+    void destroy();
     
     // expects a string of known legth that dictates actions
     void provideInput(Uchar*);

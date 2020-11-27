@@ -21,6 +21,7 @@ struct targettype {
 
 class alientype : public objecttype {
   public:
+    void destroy(){return;}
     
   protected:
     // commands from ai
@@ -39,7 +40,6 @@ class alientype : public objecttype {
     bool destroyed;
     float shieldPoints, shieldGlow;
     void drawShield();
-    
     
     //----------------------------------------------------------------------
     // functions to identify targets
