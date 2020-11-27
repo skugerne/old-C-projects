@@ -30,7 +30,7 @@ endif
 O_FILES = main.o update.o draw.o input.o menu.o textureFont.o create.o \
         collision.o net.o particles.o objecttype.o shiptype.o roidtype.o \
         shottype.o startype.o starfieldtype.o playertype.o alientype.o \
-        alienfightertype.o alienrambotype.o alienwandertype.o
+        alienfightertype.o alienrambotype.o alienwandertype.o alienluatype.o
 
 #--------------------------------------------------------------------------
 
@@ -107,6 +107,9 @@ alienrambotype.o: main.hpp objecttype.hpp alientype.hpp alienrambotype.hpp alien
 
 alienwandertype.o: main.hpp objecttype.hpp alientype.hpp alienwandertype.hpp alienwandertype.cpp
 	@echo compiling alienwandertype; $(CC) -c $(CFLAGS) alienwandertype.cpp
+
+alienluatype.o: main.hpp objecttype.hpp alientype.hpp alienluatype.hpp alienluatype.cpp
+	@echo compiling alienluatype; $(CC) -c $(CFLAGS) alienluatype.cpp
 
 #--------------------------------------------------------------------------
 
