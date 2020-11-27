@@ -65,7 +65,7 @@ void shiptype::draw(){
  
   glTranslatef(xShift , yShift , 0);
   glRotatef(angle , 0.0 , 0.0 , 1.0);
-  
+
   glColor3f(1,0,0);
   glBegin(GL_LINES);
     glVertex2i(12,0);

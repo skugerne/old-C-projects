@@ -1,5 +1,5 @@
-#ifndef ALIEN_FIGHTER_HH
-#define ALIEN_FIGHTER_HH
+#ifndef ALIEN_RAMBO_HH
+#define ALIEN_RAMBO_HH
 
 
 

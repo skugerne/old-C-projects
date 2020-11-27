@@ -180,6 +180,7 @@ class shiptype;
 class alienfightertype;
 class alienrambotype;
 class alienwandertype;
+class alienluatype;
 
 class roidtype;
 
@@ -309,6 +310,7 @@ extern IPaddress _thisIP, _otherIP;
 #include "alienfightertype.hpp"
 #include "alienrambotype.hpp"
 #include "alienwandertype.hpp"
+#include "alienluatype.hpp"
 
 #include "starfieldtype.hpp"
 #include "startype.hpp"
@@ -344,6 +346,7 @@ void createDust(double,double,double,double,double);
 void createAlienFighters();
 void createAlienRambos();
 void createAlienWanderers();
+void createAlienLuas();
 
 // in update.cpp
 void initUpdate();

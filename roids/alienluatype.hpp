@@ -1,11 +1,11 @@
-#ifndef ALIEN_FIGHTER_HH
-#define ALIEN_FIGHTER_HH
+#ifndef ALIEN_LUA_HH
+#define ALIEN_LUA_HH
 
 
 
-class alienfightertype : public alientype {
+class alienluatype : public alientype {
   public:
-    alienfightertype(double,double);
+    alienluatype(double,double);
     void aiupdate();
     void aifollow(objecttype*, double, double);
 

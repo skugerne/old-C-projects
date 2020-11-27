@@ -118,7 +118,7 @@ void intoOrbit(double x, double y, double &dx, double &dy){
 
 // based on _level, add proper asteriods to game
 void initAsteriods(){
-  int number = 80 + _level * 20;
+  int number = 160 + _level * 40;
   double massMod = .95 + (double)_level * 0.05;
   
   srand(time(0));
@@ -316,3 +316,12 @@ void createAlienWanderers(){
   oPtr->addToNewList();
 }
 
+
+
+void createAlienLuas(){
+  objecttype *oPtr;
+  
+  // some big primes ... http://www.utm.edu/research/primes/lists/small/1000.txt
+  oPtr = new alienluatype( _time * 7717 % MAX_COORDINATE , _time * 4423 % MAX_COORDINATE );
+  oPtr->addToNewList();
+}

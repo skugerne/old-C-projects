@@ -6,7 +6,7 @@ Uint lastMSec;
 Uint lastShipTransMSec;
 
 // alien creation timers
-Uint lastAF_MSec, lastAR_MSec, lastAW_MSec;
+Uint lastAF_MSec, lastAR_MSec, lastAW_MSec, lastAL_MSec;
 
 #ifdef ROIDS_SMP_MODE
 #define SMP_WORK_GROUP_COUNT 4
@@ -433,6 +433,11 @@ void update(int iterations){
   if(lastAW_MSec - SDL_GetTicks() > 20000){
     lastAW_MSec += 20000;
     createAlienWanderers();
+  }
+  
+  if(lastAL_MSec - SDL_GetTicks() > 5000){
+    lastAL_MSec += 5000;
+    createAlienLuas();
   }
   
   // *********************************************************************
