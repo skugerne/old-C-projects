@@ -2,6 +2,15 @@
 
 
 
+int luaGlColor4f(lua_State *L){
+  float r = luaL_checknumber(L, 1);
+  float g = luaL_checknumber(L, 2);
+  float b = luaL_checknumber(L, 3);
+  float a = luaL_checknumber(L, 4);
+  glColor4f(r,g,b,a);
+  return 1;
+}
+
 int luaGlColor3f(lua_State *L){
   float r = luaL_checknumber(L, 1);
   float g = luaL_checknumber(L, 2);
@@ -10,7 +19,12 @@ int luaGlColor3f(lua_State *L){
   return 1;
 }
 
-int luaGlBegin(lua_State *L){
+int luaGlBeginPolygon(lua_State *L){
+  glBegin(GL_POLYGON);
+  return 1;
+}
+
+int luaGlBeginLines(lua_State *L){
   glBegin(GL_LINES);
   return 1;
 }
@@ -27,6 +41,16 @@ int luaGlEnd(lua_State *L){
   return 1;
 }
 
+int luaGlEnableBlend(lua_State *L){
+  glEnable(GL_BLEND);
+  return 1;
+}
+
+int luaGlDisableBlend(lua_State *L){
+  glDisable(GL_BLEND);
+  return 1;
+}
+
 
 
 alienluatype::alienluatype(double X, double Y){
@@ -39,7 +63,67 @@ alienluatype::alienluatype(double X, double Y){
   collisionModifier = COLLIDE_ALIEN;
 
   basicInit();
+  init();   // to be moved to a lua call
 
+  // fire up a Lua instance for this alien
+  L = luaL_newstate();
+  luaL_openlibs(L);
+
+  // register some C functions it can call back (basically specific calls to OpenGL)
+  lua_pushcfunction(L, luaGlColor4f);
+  lua_setglobal(L, "glColor4f");
+  lua_pushcfunction(L, luaGlColor3f);
+  lua_setglobal(L, "glColor3f");
+  lua_pushcfunction(L, luaGlBeginPolygon);
+  lua_setglobal(L, "glBeginPolygon");
+  lua_pushcfunction(L, luaGlBeginLines);
+  lua_setglobal(L, "glBeginLines");
+  lua_pushcfunction(L, luaGlVertex2i);
+  lua_setglobal(L, "glVertex2i");
+  lua_pushcfunction(L, luaGlEnd);
+  lua_setglobal(L, "glEnd");
+  lua_pushcfunction(L, luaGlEnableBlend);
+  lua_setglobal(L, "glEnableBlend");
+  lua_pushcfunction(L, luaGlDisableBlend);
+  lua_setglobal(L, "glDisableBlend");
+
+  // load the script
+  if (luaL_loadfile(L, "lua_test.lua") == LUA_OK) {
+      if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+          fprintf(stderr,"Seem to have have failed to load the Lua script (item 2).\n");
+          exit(1);
+      }
+  }else{
+      fprintf(stderr,"Seem to have have failed to load the Lua script (item 1).\n");
+      exit(1);
+  }
+
+  if(lua_type(L,-1) != LUA_TNIL){
+    fprintf(stderr,"The top of the stack has type: %d\n", lua_type(L,-1));
+    exit(1);
+  }
+
+  // call out to Lua to initialize some properties of our alien
+  lua_getglobal(L, "init");
+  if (lua_isfunction(L, -1)) {  // -1 is the element just pushed, a function
+      if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+          fprintf(stderr,"Failed to call the Lua init function (item 2).\n");  // can be defective Lua code
+          exit(1);
+      }
+  } else {
+      fprintf(stderr,"Failed to call the Lua init function (item 1).\n");
+      exit(1);
+  }
+
+  if(lua_type(L,-1) != LUA_TNIL){
+    fprintf(stderr,"The top of the stack has type: %d\n", lua_type(L,-1));
+    exit(1);
+  }
+}
+
+
+
+void alienluatype::init(){
   radius = 20;
 
   mass = 8;
@@ -63,30 +147,6 @@ alienluatype::alienluatype(double X, double Y){
   
   shieldPoints = 10;
   shieldGlow = 0;
-
-  L = luaL_newstate();
-  luaL_openlibs(L);
-
-  lua_pushcfunction(L, luaGlColor3f);  // push the pointer to our func
-  lua_setglobal(L, "glColor3f");       // make that function into a global
-  lua_pushcfunction(L, luaGlBegin);    // push the pointer to our func
-  lua_setglobal(L, "glBegin");         // make that function into a global
-  lua_pushcfunction(L, luaGlVertex2i); // push the pointer to our func
-  lua_setglobal(L, "glVertex2i");      // make that function into a global
-  lua_pushcfunction(L, luaGlEnd);      // push the pointer to our func
-  lua_setglobal(L, "glEnd");           // make that function into a global
-
-  if (luaL_loadfile(L, "lua_test.lua") == LUA_OK) {
-      if (lua_pcall(L, 0, 1, 0) == LUA_OK) {
-          lua_pop(L, lua_gettop(L));
-      }else{
-          fprintf(stderr,"Seem to have have failed to load the Lua script (item 2).\n");
-          exit(1);
-      }
-  }else{
-      fprintf(stderr,"Seem to have have failed to load the Lua script (item 1).\n");
-      exit(1);
-  }
 }
 
 
@@ -102,9 +162,9 @@ void alienluatype::draw(){
  
   // call out to Lua to draw our alien
   lua_getglobal(L, "draw");
-  if (lua_isfunction(L, -1)) {
+  if (lua_isfunction(L, -1)) {  // -1 is the element just pushed, a function
       if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-          fprintf(stderr,"Failed to call the Lua draw function (item 2).\n");
+          fprintf(stderr,"Failed to call the Lua draw function (item 2).\n");  // can be defective Lua code
           exit(1);
       }
   } else {

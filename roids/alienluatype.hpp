@@ -10,6 +10,7 @@
 class alienluatype : public alientype {
   public:
     alienluatype(double,double);
+    void init();
     void aiupdate();
     void aifollow(objecttype*, double, double);
 
