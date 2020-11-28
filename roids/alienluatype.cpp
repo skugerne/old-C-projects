@@ -63,7 +63,6 @@ alienluatype::alienluatype(double X, double Y){
   collisionModifier = COLLIDE_ALIEN;
 
   basicInit();
-  init();   // to be moved to a lua call
 
   // fire up a Lua instance for this alien
   L = luaL_newstate();
@@ -103,35 +102,34 @@ alienluatype::alienluatype(double X, double Y){
     exit(1);
   }
 
-  // call out to Lua to initialize some properties of our alien
-  lua_getglobal(L, "init");
-  if (lua_isfunction(L, -1)) {  // -1 is the element just pushed, a function
-      if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-          fprintf(stderr,"Failed to call the Lua init function (item 2).\n");  // can be defective Lua code
-          exit(1);
-      }
-  } else {
-      fprintf(stderr,"Failed to call the Lua init function (item 1).\n");
-      exit(1);
-  }
-
-  if(lua_type(L,-1) != LUA_TNIL){
-    fprintf(stderr,"The top of the stack has type: %d\n", lua_type(L,-1));
-    exit(1);
-  }
+  init();
 }
 
 
 
 void alienluatype::init(){
-  radius = 20;
 
-  mass = 8;
+  // load from the Lua script
+  lua_getglobal(L, "radius");
+  radius = lua_tonumber(L,-1);
+  lua_pop(L, 1);
+  lua_getglobal(L, "mass");
+  mass = lua_tonumber(L,-1);
+  lua_pop(L, 1);
+  lua_getglobal(L, "turnRate");
+  turnRate = lua_tonumber(L,-1);
+  lua_pop(L, 1);
+  lua_getglobal(L, "enginePower");
+  enginePower = lua_tonumber(L,-1);
+  lua_pop(L, 1);
+  lua_getglobal(L, "maxSpeed");
+  maxSpeed = lua_tonumber(L,-1);
+  lua_pop(L, 1);
 
-  // each pre-scaled for DT of 1/1000
-  turnRate = .075;       // 75 deg/S
-  enginePower = .00125;  // 1250 PPS^2
-  maxSpeed = 1.0;        // 1000 PPS
+  if(lua_type(L,-1) != LUA_TNIL){
+    fprintf(stderr,"The top of the stack has type: %d\n", lua_type(L,-1));
+    exit(1);
+  }
 
   engineOn = false;
   turningRight = false;
