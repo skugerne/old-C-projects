@@ -490,12 +490,12 @@ void update(int iterations){
   
   {
     int todo;
-    if( _fps > 240.0 )
+    if( _fps > 50.0 )
       todo = NUM_STARFIELDS;
-    else if( _fps < 30.0 )
-      todo = 1;
     else
-      todo = (int)((float)(NUM_STARFIELDS * _fps) / 250.0);
+      todo = (int)((float)(NUM_STARFIELDS * _fps) / 50.0);
+    if( todo < 1 )
+      todo = 1;
     
     for(int i=0;i<todo;++i)
       _stars[i]->update();
