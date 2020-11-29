@@ -61,6 +61,9 @@ void semiResetForNewGame(){
   
   // otherwise people looking at the sectors map (such as _player's GUI) ...
   // ... will access deleted objects, which is bad
+  #ifdef DEBUG_UPDATE
+  fprintf(stderr,"Zero out the sector first pointers.\n");
+  #endif
   for(int i=0;i<NUM_SECTORS_PER_SIDE;++i)
     for(int j=0;j<NUM_SECTORS_PER_SIDE;++j)
       _sectors[i][j].first = NULL;

@@ -9,6 +9,21 @@ turnRate = .075;       -- how fast it turns .... 0.075 = 75 deg/S
 enginePower = .00125;  -- how fast it accelerates .... 0.00125 = 1250 PPS^2
 maxSpeed = 1.0;        -- some kind of max speed ... 1.0 = 1000 PPS
 
+weapons = {
+  {
+    x = 2,
+    y = 0,
+    angle = 0,
+    xOffset = 0,
+    yOffset = 0,
+    fireDelay = 50,   -- compared to 1000 updates per second
+    glowLimit = 30,
+    shotname = 'SHOT_WEAK',
+    shotcount = 'SHOT_DOUBLE',
+    shotmod = 'SHOT_FAST_LONG'
+  }
+}
+
 
 
 function draw()

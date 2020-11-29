@@ -2,6 +2,42 @@
 
 
 
+// convert strings to shotnametype
+shotnametype shotnametypeFromString(const char *in){
+  if(strcmp(in,"SHOT_WEAK") == 0) return SHOT_WEAK;
+  if(strcmp(in,"SHOT_MED") == 0) return SHOT_MED;
+  if(strcmp(in,"SHOT_BIG") == 0) return SHOT_BIG;
+  if(strcmp(in,"SHOT_SUPER") == 0) return SHOT_SUPER;
+  fprintf(stderr,"Failed to translate %s.\n",in);
+  exit(1);
+}
+
+// convert strings to shotcounttype
+shotcounttype shotcounttypeFromString(const char *in){
+  if(strcmp(in,"SHOT_SINGLE") == 0) return SHOT_SINGLE;
+  if(strcmp(in,"SHOT_DOUBLE") == 0) return SHOT_DOUBLE;
+  if(strcmp(in,"SHOT_TRIPPLE") == 0) return SHOT_TRIPPLE;
+  if(strcmp(in,"SHOT_QUAD") == 0) return SHOT_QUAD;
+  fprintf(stderr,"Failed to translate %s.\n",in);
+  exit(1);
+}
+
+// convert strings to shotmodtype
+shotmodtype shotmodtypeFromString(const char *in){
+  if(strcmp(in,"SHOT_NORM") == 0) return SHOT_NORM;
+  if(strcmp(in,"SHOT_FAST") == 0) return SHOT_FAST;
+  if(strcmp(in,"SHOT_VERY_FAST") == 0) return SHOT_VERY_FAST;
+  if(strcmp(in,"SHOT_HEAVY") == 0) return SHOT_HEAVY;
+  if(strcmp(in,"SHOT_FAST_HEAVY") == 0) return SHOT_FAST_HEAVY;
+  if(strcmp(in,"SHOT_PROX") == 0) return SHOT_PROX;
+  if(strcmp(in,"SHOT_LONG") == 0) return SHOT_LONG;
+  if(strcmp(in,"SHOT_FAST_LONG") == 0) return SHOT_FAST_LONG;
+  fprintf(stderr,"Failed to translate %s.\n",in);
+  exit(1);
+}
+
+
+
 // for over-the-network creation
 shottype::shottype(objecttype *launcher, double lAngle,
   shotnametype name, shotcounttype count, shotmodtype mod

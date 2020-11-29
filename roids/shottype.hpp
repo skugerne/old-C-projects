@@ -24,6 +24,12 @@ enum shotmodtype { SHOT_NORM,
 
 
 
+shotnametype shotnametypeFromString(const char*);
+shotcounttype shotcounttypeFromString(const char*);
+shotmodtype shotmodtypeFromString(const char*);
+
+
+
 // the virtual class definition for the asteriods
 class shottype : public objecttype {
   public:

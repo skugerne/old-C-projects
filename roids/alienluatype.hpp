@@ -7,9 +7,31 @@
 
 
 
+struct weapontype {
+  float glow;
+  bool on;
+  Uint lastFired;
+
+  Uint x;        // location on the ship model
+  Uint y;
+  float angle;   // location where the shots emerge relative to the location
+  Uint xOffset;
+  Uint yOffset;
+
+  Uint fireDelay;
+  Uint glowLimit;
+
+  shotnametype shotname;
+  shotcounttype shotcount;
+  shotmodtype shotmod;
+};
+
+
+
 class alienluatype : public alientype {
   public:
     alienluatype(double,double);
+    void prepWeaponPropery(Uint, const char *);
     void init();
     void aiupdate();
     void aifollow(objecttype*, double, double);
@@ -24,10 +46,8 @@ class alienluatype : public alientype {
     double getWarhead(objectcollisiontype){return 0.0;}
   protected:
     
-    float weaponGlow;
-
-    bool weaponOn;
-    Uint weaponLastFired;
+    Uint numWeapons;
+    weapontype *weapons;
 
     lua_State *L;
 };

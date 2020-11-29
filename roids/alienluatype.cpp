@@ -64,6 +64,9 @@ alienluatype::alienluatype(double X, double Y){
 
   basicInit();
 
+  fprintf(stderr,"Before Lua.\n");
+  fflush(stderr);
+
   // fire up a Lua instance for this alien
   L = luaL_newstate();
   luaL_openlibs(L);
@@ -98,7 +101,7 @@ alienluatype::alienluatype(double X, double Y){
   }
 
   if(lua_type(L,-1) != LUA_TNIL){
-    fprintf(stderr,"The top of the stack has type: %d\n", lua_type(L,-1));
+    fprintf(stderr,"The top of the stack has type (should have nothing): %d\n", lua_type(L,-1));
     exit(1);
   }
 
@@ -107,11 +110,98 @@ alienluatype::alienluatype(double X, double Y){
 
 
 
+//alienluatype::~alienluatype(){
+//  if( weapons ) delete weapons;
+//}
+
+
+
+void alienluatype::prepWeaponPropery(Uint index, const char *prop){
+  lua_getglobal(L, "weapons");
+  lua_pushinteger(L, index+1);
+  lua_gettable(L, -2);
+  lua_pushstring(L, prop);
+  lua_gettable(L, -2);
+  fprintf(stderr,"The top of the stack has type (hopefully string or number): %d\n", lua_type(L,-1));
+  fflush(stderr);
+}
+
+
+
 void alienluatype::init(){
+
+  lua_getglobal(L, "weapons");
+  fprintf(stderr,"The top of the stack has type (hopefully table): %d\n", lua_type(L,-1));
+  numWeapons = lua_objlen(L, -1);
+  fprintf(stderr,"Number of weapons is %d.\n",numWeapons);
+  lua_pop(L, 1);
+
+  if(lua_type(L,-1) != LUA_TNIL){
+    fprintf(stderr,"The top of the stack has type (should have nothing): %d\n", lua_type(L,-1));
+    exit(1);
+  }
+  
+  weapons = new weapontype[numWeapons];
+  for(Uint i=0; i<numWeapons; ++i){
+    weapons[i].glow = 0;
+    weapons[i].on = false;
+    weapons[i].lastFired = 0;
+
+    prepWeaponPropery(i,"x");
+    weapons[i].x = lua_tonumber(L,-1);
+    lua_pop(L, 3);
+
+    prepWeaponPropery(i,"y");
+    weapons[i].y = lua_tonumber(L,-1);
+    lua_pop(L, 3);
+
+    prepWeaponPropery(i,"angle");
+    weapons[i].angle = lua_tonumber(L,-1);
+    lua_pop(L, 3);
+
+    prepWeaponPropery(i,"xOffset");
+    weapons[i].xOffset = lua_tonumber(L,-1);
+    lua_pop(L, 3);
+
+    prepWeaponPropery(i,"yOffset");
+    weapons[i].yOffset = lua_tonumber(L,-1);
+    lua_pop(L, 3);
+
+    prepWeaponPropery(i,"fireDelay");
+    weapons[i].fireDelay = lua_tonumber(L,-1);
+    fprintf(stderr,"Set weapons[i].fireDelay to %d.\n",(int)weapons[i].fireDelay);
+    lua_pop(L, 3);
+
+    prepWeaponPropery(i,"glowLimit");
+    weapons[i].glowLimit = lua_tonumber(L,-1);
+    fprintf(stderr,"Set weapons[i].glowLimit to %d.\n",(int)weapons[i].glowLimit);
+    lua_pop(L, 3);
+
+    prepWeaponPropery(i,"shotname");
+    weapons[i].shotname = shotnametypeFromString(lua_tostring(L,-1));
+    fprintf(stderr,"Set weapons[i].shotname to %d.\n",weapons[i].shotname);
+    lua_pop(L, 3);
+
+    prepWeaponPropery(i,"shotcount");
+    weapons[i].shotcount = shotcounttypeFromString(lua_tostring(L,-1));
+    fprintf(stderr,"Set weapons[i].shotcount to %d.\n",weapons[i].shotcount);
+    lua_pop(L, 3);
+
+    prepWeaponPropery(i,"shotmod");
+    weapons[i].shotmod = shotmodtypeFromString(lua_tostring(L,-1));
+    fprintf(stderr,"Set weapons[i].shotmod to %d.\n",weapons[i].shotmod);
+    lua_pop(L, 3);
+  }
+
+  if(lua_type(L,-1) != LUA_TNIL){
+    fprintf(stderr,"The top of the stack has type (should have nothing): %d\n", lua_type(L,-1));
+    exit(1);
+  }
 
   // load from the Lua script
   lua_getglobal(L, "radius");
   radius = lua_tonumber(L,-1);
+  fprintf(stderr,"Set radius to %d.\n",(int)radius);
   lua_pop(L, 1);
   lua_getglobal(L, "mass");
   mass = lua_tonumber(L,-1);
@@ -125,25 +215,23 @@ void alienluatype::init(){
   lua_getglobal(L, "maxSpeed");
   maxSpeed = lua_tonumber(L,-1);
   lua_pop(L, 1);
+  lua_getglobal(L, "shieldPoints");
+  shieldPoints = lua_tonumber(L,-1);
+  lua_pop(L, 1);
 
   if(lua_type(L,-1) != LUA_TNIL){
-    fprintf(stderr,"The top of the stack has type: %d\n", lua_type(L,-1));
+    fprintf(stderr,"The top of the stack has type (should have nothing): %d\n", lua_type(L,-1));
     exit(1);
   }
 
   engineOn = false;
   turningRight = false;
   turningLeft = false;
-  weaponOn = false;
   
   baseVisibility = 1;
   detectabilityFactor = 1 * radius;
   
   engineGlow = 0;
-  weaponGlow = 0;
-  weaponLastFired = 0;
-  
-  shieldPoints = 10;
   shieldGlow = 0;
 }
 
@@ -238,10 +326,11 @@ objecttype* alienluatype::specialUpdate(){
     engineGlow -= DT / 2;
     if(engineGlow < 0) engineGlow = 0;
   }
-  if(weaponGlow > 0){
-    weaponGlow -= DT / 2;
-    if(weaponGlow < 0) weaponGlow = 0;
-  }
+  for(Uint i=0; i<numWeapons; ++i)
+    if(weapons[i].glow > 0){
+      weapons[i].glow -= DT / 2;
+      if(weapons[i].glow < 0) weapons[i].glow = 0;
+    }
   if(shieldGlow > 0){
     shieldGlow -= DT;
     if(shieldGlow < 0) shieldGlow = 0;
@@ -269,14 +358,19 @@ objecttype* alienluatype::specialUpdate(){
   
   //----------------------------------------------------------------------
   // weapon firing
-  
-  if(weaponOn && weaponGlow < 30 && _timestamp - weaponLastFired >= 50){
-    ++weaponGlow;
-    
-    weaponLastFired = _timestamp;
-    
-    objecttype *oPtr = new shottype(this,angle,SHOT_WEAK,SHOT_DOUBLE,SHOT_FAST_LONG);
-    oPtr->addToNewList();
+
+  for(Uint i=0; i<numWeapons; ++i){
+    if(weapons[i].on && weapons[i].glow < weapons[i].glowLimit && _timestamp - weapons[i].lastFired >= weapons[i].fireDelay){
+      float weaponangle = weapons[i].angle + angle;
+      if(weaponangle > 360) weaponangle -= 360;
+      else if(weaponangle < 0) weaponangle += 360;
+
+      ++weapons[i].glow;
+      weapons[i].lastFired = _timestamp;
+      
+      objecttype *oPtr = new shottype(this,weaponangle,weapons[i].shotname,weapons[i].shotcount,weapons[i].shotmod);
+      oPtr->addToNewList();
+    }
   }
   
   //----------------------------------------------------------------------
@@ -294,7 +388,7 @@ void alienluatype::collisionEffect(double damage, objectcollisiontype what){
     isDead = true;
     
     // create some flame
-    for(int i=0;i<20;++i){
+    for(Uint i=0;i<20;++i){
       double speedFactor = 
         (double)rand() / ( (double)RAND_MAX+1.0 );
       
@@ -309,7 +403,7 @@ void alienluatype::collisionEffect(double damage, objectcollisiontype what){
     }
   
     // create some dust
-    for(int i=0;i<15;++i)
+    for(Uint i=0;i<15;++i)
       createDust(xCoordinate,yCoordinate,xChange,yChange,2);
   }else{
     if(what == COLLIDE_DUST){
@@ -357,10 +451,12 @@ void alienluatype::aifollow(objecttype *target, double deadAngle, double engineA
   if((targetAngle < engineAngle) || (targetAngle > 360 - engineAngle)){
     engineOn = true;
     if(fabsf(distX) < 700 && fabsf(distY) < 700)
-      weaponOn = true;
+      for(Uint i=0; i<numWeapons; ++i)
+        weapons[i].on = true;
   }else{
     engineOn = false;
-    weaponOn = false;
+    for(Uint i=0; i<numWeapons; ++i)
+      weapons[i].on = false;
   }
 }
 

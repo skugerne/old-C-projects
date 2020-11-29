@@ -27,6 +27,7 @@ void initUpdate(){
   lastAF_MSec = lastMSec;
   lastAR_MSec = lastMSec;
   lastAW_MSec = lastMSec;
+  lastAL_MSec = lastMSec;
   
   // timestamp is incremented once per loop
   _timestamp = 1;
@@ -36,6 +37,9 @@ void initUpdate(){
   _frames = 0;
   _updates = 0;
   
+  #ifdef DEBUG_UPDATE
+  fprintf(stderr,"Zero out the sectors.\n");
+  #endif
   for(int i=0;i<NUM_SECTORS_PER_SIDE;++i){
     for(int j=0;j<NUM_SECTORS_PER_SIDE;++j){
       
