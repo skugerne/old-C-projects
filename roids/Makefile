@@ -21,7 +21,7 @@ ifeq ("$(OS)","Darwin")
 else
     # not-OSX install
     
-    CFLAGS += -DOPEN_GL='<GL/gl.h>' -DSDL_NET='<SDL/SDL_net.h>'
+    CFLAGS += -DOPEN_GL='<GL/gl.h>' -DSDL_NET='<SDL/SDL_net.h>' -DLUA53
     LDFLAGS = -lSDL -lSDL_net -lGL -lpthread -llua5.3
 endif
 

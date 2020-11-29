@@ -1,9 +1,15 @@
 #ifndef ALIEN_LUA_HH
 #define ALIEN_LUA_HH
 
+#ifdef LUA53
 #include <lua5.3/lua.h>
 #include <lua5.3/lualib.h>
 #include <lua5.3/lauxlib.h>
+#endif
+
+#ifdef LUA51
+// FIXME
+#endif
 
 
 
