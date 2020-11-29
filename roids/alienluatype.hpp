@@ -28,7 +28,7 @@ struct weapontype {
 
   float x;        // location on the ship model
   float y;
-  float angle;   // location where the shots emerge relative to the location
+  float angle;    // location where the shots emerge relative to the location
   float xOffset;
   float yOffset;
 

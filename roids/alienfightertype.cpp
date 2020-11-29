@@ -168,7 +168,8 @@ objecttype* alienfightertype::specialUpdate(){
     
     weaponLastFired = _timestamp;
     
-    objecttype *oPtr = new shottype(this,angle,SHOT_WEAK,SHOT_SINGLE,SHOT_NORM);
+    shotorigintype shotorigin = prepareShotOrigin(this,0,0,0,0,0);
+    objecttype *oPtr = new shottype(shotorigin,0,SHOT_WEAK,SHOT_SINGLE,SHOT_NORM);
     oPtr->addToNewList();
   }
   

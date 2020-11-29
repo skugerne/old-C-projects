@@ -30,10 +30,24 @@ shotmodtype shotmodtypeFromString(const char*);
 
 
 
+struct shotorigintype {
+  float x;           // location where the shot starts
+  float y;
+  float xChange;     // movement of the object firing the shot (so excludes muzzle velocity)
+  float yChange;
+  float heading;     // the angle in degrees the projectile is aimed at, to be combined with 'lAngle'
+};
+
+
+
+shotorigintype prepareShotOrigin(objecttype*,float,float,float,float,float);
+
+
+
 // the virtual class definition for the asteriods
 class shottype : public objecttype {
   public:
-    shottype(objecttype*,double,shotnametype,shotcounttype,shotmodtype);
+    shottype(shotorigintype,double,shotnametype,shotcounttype,shotmodtype);
     
     void draw();
     

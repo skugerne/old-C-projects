@@ -217,7 +217,8 @@ objecttype* shiptype::specialUpdate(){
     weaponHeat[0] < weaponMaxHeat[0] && 
     weaponLastFire[0] + weaponReloadTime[0] <= _timestamp
   ){
-    objecttype *sPtr = new shottype(this,angle,SHOT_MED,SHOT_SINGLE,SHOT_NORM);
+    shotorigintype shotorigin = prepareShotOrigin(this,0,0,0,0,0);
+    objecttype *sPtr = new shottype(shotorigin,0,SHOT_MED,SHOT_SINGLE,SHOT_NORM);
     sPtr->addToNewList();
     
     #ifdef DEBUG_OBJECTTYPE
@@ -232,7 +233,8 @@ objecttype* shiptype::specialUpdate(){
     weaponHeat[1] < weaponMaxHeat[1] && 
     weaponLastFire[1] + weaponReloadTime[1] <= _timestamp
   ){
-    objecttype *sPtr = new shottype(this,angle,SHOT_MED,SHOT_QUAD,SHOT_PROX);
+    shotorigintype shotorigin = prepareShotOrigin(this,0,0,0,0,0);
+    objecttype *sPtr = new shottype(shotorigin,0,SHOT_MED,SHOT_QUAD,SHOT_PROX);
     sPtr->addToNewList();
     
     #ifdef DEBUG_OBJECTTYPE
