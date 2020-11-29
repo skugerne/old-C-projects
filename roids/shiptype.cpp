@@ -93,11 +93,11 @@ void shiptype::draw(){
     glEnable(GL_BLEND);
     glColor4f(1,0,1,0.85);
   
-    sprintf(buf,"ahead:     %.2f",thrustStat1/DT);
+    snprintf(buf,30,"ahead:     %.2f",thrustStat1/DT);
     printStringToRight(FONT_SMALL,false,&buf[0],-25,125);
-    sprintf(buf,"sideways:  %.2f",thrustStat2/DT);
+    snprintf(buf,30,"sideways:  %.2f",thrustStat2/DT);
     printStringToRight(FONT_SMALL,false,&buf[0],-25,105);
-    sprintf(buf,"speed:     %.2f",thrustStat3/DT);
+    snprintf(buf,30,"speed:     %.2f",thrustStat3/DT);
     printStringToRight(FONT_SMALL,false,&buf[0],-25,85);
    
     glDisable(GL_BLEND);

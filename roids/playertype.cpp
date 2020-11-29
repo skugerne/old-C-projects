@@ -115,6 +115,9 @@ void playertype::makeTarget(shiptype *newTarget){
 
 void playertype::draw(){
   if(target){
+    #ifdef DEBUG_DRAW
+    fprintf(stderr,"Draw player with target.\n");
+    #endif
     
     // needs to have a rotation matching the screen
     if(_sceenRotation != 0.0){
@@ -134,6 +137,9 @@ void playertype::draw(){
     drawScanner();
     
   }else{
+    #ifdef DEBUG_DRAW
+    fprintf(stderr,"Draw player without target.\n");
+    #endif
   
     glPushMatrix();
     
@@ -161,7 +167,7 @@ void playertype::draw(){
     glEnable(GL_BLEND);
     glColor4f(1,1,1,1);
   
-    sprintf(buf,"Respawning... %d",3 - (_time - targetDeadAt) / 1000);
+    snprintf(buf,20,"Respawning... %d",3 - (_time - targetDeadAt) / 1000);
     printStringCentered(FONT_SMALL, false, &buf[0], 0, -98);
     
     glDisable(GL_BLEND);
@@ -548,7 +554,9 @@ void playertype::drawRingArrows(){
     if(i >= 0 && i < NUM_SECTORS_PER_SIDE){
       for(int j=sectorY-30;j<sectorY+30;++j){
         if(j >= 0 && j < NUM_SECTORS_PER_SIDE){
+          //fprintf(stderr,"<%d,%d>",i,j);
           if(_sectors[i][j].timestamp == _timestamp-1){
+            //fprintf(stderr,"<post>");
             // _timestamp - 1 cause _timestamp is incremented right after each update
             
             objecttype *oPtr = _sectors[i][j].first;
@@ -889,17 +897,17 @@ void playertype::drawScanner(){
   glEnable(GL_BLEND);
   glColor4f(.7,.7,0,.65);
   
-  sprintf(buf,"Scanner");
+  snprintf(buf,10,"Scanner");
   printStringToRight(FONT_SMALL,false,&buf[0],RADAR_SIZE/2 - _virtualPosX - 35 + 10,17 + RADAR_SIZE - _virtualPosY);
-  sprintf(buf,"Sensor");
+  snprintf(buf,10,"Sensor");
   printStringToLeft(FONT_SMALL,false,&buf[0],-RADAR_SIZE/2 + _virtualPosX + 30 - 10,17 + RADAR_SIZE - _virtualPosY);
-  sprintf(buf,"Shield");
+  snprintf(buf,10,"Shield");
   printStringToLeft(FONT_SMALL,false,&buf[0], _virtualPosX, -170);
-  sprintf(buf,"Strength");
+  snprintf(buf,10,"Strength");
   printStringToLeft(FONT_SMALL,false,&buf[0], _virtualPosX, -186);
-  sprintf(buf,"Weapon");
+  snprintf(buf,10,"Weapon");
   printStringToRight(FONT_SMALL,false,&buf[0], -_virtualPosX, -170);
-  sprintf(buf,"Heat");
+  snprintf(buf,10,"Heat");
   printStringToRight(FONT_SMALL,false,&buf[0], -_virtualPosX, -186);
   
     
