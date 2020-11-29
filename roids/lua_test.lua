@@ -11,16 +11,37 @@ maxSpeed = 1.0;        -- some kind of max speed ... 1.0 = 1000 PPS
 
 weapons = {
   {
-    x = 2,
+    x = 2,         -- position on the model
     y = 0,
-    angle = 0,
-    xOffset = 0,
+    angle = 0,     -- relative to the model
+    xOffset = 0,   -- additional offset to apply from x,y after rotation (if any)
     yOffset = 0,
     fireDelay = 50,   -- compared to 1000 updates per second
     glowLimit = 30,
     shotname = 'SHOT_WEAK',
     shotcount = 'SHOT_DOUBLE',
     shotmod = 'SHOT_FAST_LONG'
+  }
+}
+
+engines = {
+  {
+    firingMod = 30,
+    firingPoint = 6,
+    x = -10,   -- position on the model
+    y = 40
+  },
+  {
+    firingMod = 30,
+    firingPoint = 12,
+    x = -10,
+    y = -40
+  },
+  {
+    firingMod = 4,
+    firingPoint = 2,
+    x = -20,
+    y = 0
   }
 }
 

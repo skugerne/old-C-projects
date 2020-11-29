@@ -116,8 +116,8 @@ alienluatype::alienluatype(double X, double Y){
 
 
 
-void alienluatype::prepWeaponPropery(Uint index, const char *prop){
-  lua_getglobal(L, "weapons");
+void alienluatype::prepLuaTablePropery(Uint index, const char *table, const char *prop){
+  lua_getglobal(L, table);
   lua_pushinteger(L, index+1);
   lua_gettable(L, -2);
   lua_pushstring(L, prop);
@@ -129,6 +129,8 @@ void alienluatype::prepWeaponPropery(Uint index, const char *prop){
 
 
 void alienluatype::init(){
+
+  // - - - - - LOAD WEAPON STUFF - - - - -
 
   lua_getglobal(L, "weapons");
   fprintf(stderr,"The top of the stack has type (hopefully table): %d\n", lua_type(L,-1));
@@ -147,58 +149,91 @@ void alienluatype::init(){
     weapons[i].on = false;
     weapons[i].lastFired = 0;
 
-    prepWeaponPropery(i,"x");
+    prepLuaTablePropery(i,"weapons","x");
     weapons[i].x = lua_tonumber(L,-1);
     lua_pop(L, 3);
 
-    prepWeaponPropery(i,"y");
+    prepLuaTablePropery(i,"weapons","y");
     weapons[i].y = lua_tonumber(L,-1);
     lua_pop(L, 3);
 
-    prepWeaponPropery(i,"angle");
+    prepLuaTablePropery(i,"weapons","angle");
     weapons[i].angle = lua_tonumber(L,-1);
     lua_pop(L, 3);
 
-    prepWeaponPropery(i,"xOffset");
+    prepLuaTablePropery(i,"weapons","xOffset");
     weapons[i].xOffset = lua_tonumber(L,-1);
     lua_pop(L, 3);
 
-    prepWeaponPropery(i,"yOffset");
+    prepLuaTablePropery(i,"weapons","yOffset");
     weapons[i].yOffset = lua_tonumber(L,-1);
     lua_pop(L, 3);
 
-    prepWeaponPropery(i,"fireDelay");
+    prepLuaTablePropery(i,"weapons","fireDelay");
     weapons[i].fireDelay = lua_tonumber(L,-1);
     fprintf(stderr,"Set weapons[i].fireDelay to %d.\n",(int)weapons[i].fireDelay);
     lua_pop(L, 3);
 
-    prepWeaponPropery(i,"glowLimit");
+    prepLuaTablePropery(i,"weapons","glowLimit");
     weapons[i].glowLimit = lua_tonumber(L,-1);
     fprintf(stderr,"Set weapons[i].glowLimit to %d.\n",(int)weapons[i].glowLimit);
     lua_pop(L, 3);
 
-    prepWeaponPropery(i,"shotname");
+    prepLuaTablePropery(i,"weapons","shotname");
     weapons[i].shotname = shotnametypeFromString(lua_tostring(L,-1));
     fprintf(stderr,"Set weapons[i].shotname to %d.\n",weapons[i].shotname);
     lua_pop(L, 3);
 
-    prepWeaponPropery(i,"shotcount");
+    prepLuaTablePropery(i,"weapons","shotcount");
     weapons[i].shotcount = shotcounttypeFromString(lua_tostring(L,-1));
     fprintf(stderr,"Set weapons[i].shotcount to %d.\n",weapons[i].shotcount);
     lua_pop(L, 3);
 
-    prepWeaponPropery(i,"shotmod");
+    prepLuaTablePropery(i,"weapons","shotmod");
     weapons[i].shotmod = shotmodtypeFromString(lua_tostring(L,-1));
     fprintf(stderr,"Set weapons[i].shotmod to %d.\n",weapons[i].shotmod);
     lua_pop(L, 3);
   }
+
+  // - - - - - LOAD ENGINE STUFF - - - - -
 
   if(lua_type(L,-1) != LUA_TNIL){
     fprintf(stderr,"The top of the stack has type (should have nothing): %d\n", lua_type(L,-1));
     exit(1);
   }
 
-  // load from the Lua script
+  lua_getglobal(L, "engines");
+  fprintf(stderr,"The top of the stack has type (hopefully table): %d\n", lua_type(L,-1));
+  numEngines = lua_objlen(L, -1);
+  fprintf(stderr,"Number of engines is %d.\n",numEngines);
+  lua_pop(L, 1);
+
+  if(lua_type(L,-1) != LUA_TNIL){
+    fprintf(stderr,"The top of the stack has type (should have nothing): %d\n", lua_type(L,-1));
+    exit(1);
+  }
+
+  engines = new enginetype[numEngines];
+  for(Uint i=0; i<numEngines; ++i){
+    prepLuaTablePropery(i,"engines","firingMod");
+    engines[i].firingMod = lua_tonumber(L,-1);
+    lua_pop(L, 3);
+
+    prepLuaTablePropery(i,"engines","firingPoint");
+    engines[i].firingPoint = lua_tonumber(L,-1);
+    lua_pop(L, 3);
+
+    prepLuaTablePropery(i,"engines","x");
+    engines[i].x = lua_tonumber(L,-1);
+    lua_pop(L, 3);
+
+    prepLuaTablePropery(i,"engines","y");
+    engines[i].y = lua_tonumber(L,-1);
+    lua_pop(L, 3);
+  }
+
+  // - - - - - LOAD OTHER PROPERTIES - - - - -
+
   lua_getglobal(L, "radius");
   radius = lua_tonumber(L,-1);
   fprintf(stderr,"Set radius to %d.\n",(int)radius);
@@ -223,6 +258,8 @@ void alienluatype::init(){
     fprintf(stderr,"The top of the stack has type (should have nothing): %d\n", lua_type(L,-1));
     exit(1);
   }
+
+  // - - - - - NON-LUA PROPERTIES - - - - -
 
   engineOn = false;
   turningRight = false;
@@ -304,18 +341,20 @@ objecttype* alienluatype::specialUpdate(){
 
     thrust(angle, maxSpeed, enginePower);
     
-    if(_timestamp % 12 == 0){
-      double tempA = angle * M_PI / 180;
-      double particleX = xCoordinate - radius * cos(tempA);
-      double particleY = yCoordinate - radius * sin(tempA);
-      double particleDX, particleDY;
+    for(Uint i=0; i<numEngines; ++i){
+      if(_timestamp % engines[i].firingMod == engines[i].firingPoint){
+        double tempA = angle * M_PI / 180;
+        double particleX = xCoordinate + engines[i].x * cos(tempA) + engines[i].y * sin(tempA);
+        double particleY = yCoordinate + engines[i].x * sin(tempA) - engines[i].y * cos(tempA);
+        double particleDX, particleDY;
       
-      // pre-scaled for DT of 1/1000
-      double speedFactor = .35;
+        // pre-scaled for DT of 1/1000
+        double speedFactor = .35;
     
-      particleDX = xChange - (speedFactor * cos(tempA+goof()/20));
-      particleDY = yChange - (speedFactor * sin(tempA+goof()/20));
-      createFlame(particleX,particleY,particleDX,particleDY);
+        particleDX = xChange - (speedFactor * cos(tempA+goof()/20));
+        particleDY = yChange - (speedFactor * sin(tempA+goof()/20));
+        createFlame(particleX,particleY,particleDX,particleDY);
+      }
     }
   }
   

@@ -12,11 +12,11 @@ struct weapontype {
   bool on;
   Uint lastFired;
 
-  Uint x;        // location on the ship model
-  Uint y;
+  float x;        // location on the ship model
+  float y;
   float angle;   // location where the shots emerge relative to the location
-  Uint xOffset;
-  Uint yOffset;
+  float xOffset;
+  float yOffset;
 
   Uint fireDelay;
   Uint glowLimit;
@@ -28,10 +28,19 @@ struct weapontype {
 
 
 
+struct enginetype {
+  Uint firingMod;    // one timestamp in this many emits fire
+  Uint firingPoint;  // emit fire when the timestamp mod 'firingMod' is this
+  float x;           // location on the ship model
+  float y;
+};
+
+
+
 class alienluatype : public alientype {
   public:
     alienluatype(double,double);
-    void prepWeaponPropery(Uint, const char *);
+    void prepLuaTablePropery(Uint, const char *, const char *);
     void init();
     void aiupdate();
     void aifollow(objecttype*, double, double);
@@ -48,6 +57,9 @@ class alienluatype : public alientype {
     
     Uint numWeapons;
     weapontype *weapons;
+    
+    Uint numEngines;
+    enginetype *engines;
 
     lua_State *L;
 };
