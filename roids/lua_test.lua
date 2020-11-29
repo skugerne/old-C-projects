@@ -1,13 +1,15 @@
 print("Lua is loading!")
 
-radius = 20;   -- how large the collision circle and shield are
+radius = 150;   -- how large the collision circle and shield are
 
-mass = 8;   -- how heavy in collisions
+mass = 100;   -- how heavy in collisions
 
 -- each pre-scaled for DT of 1/1000
 turnRate = .075;       -- how fast it turns .... 0.075 = 75 deg/S
-enginePower = .00125;  -- how fast it accelerates .... 0.00125 = 1250 PPS^2
+enginePower = .000125;  -- how fast it accelerates .... 0.00125 = 1250 PPS^2
 maxSpeed = 1.0;        -- some kind of max speed ... 1.0 = 1000 PPS
+
+shieldPoints = 100;
 
 weapons = {
   {
@@ -26,79 +28,105 @@ weapons = {
 
 engines = {
   {
-    firingMod = 30,
-    firingPoint = 6,
-    x = -10,   -- position on the model
-    y = 40
-  },
-  {
-    firingMod = 30,
-    firingPoint = 12,
-    x = -10,
-    y = -40
-  },
-  {
-    firingMod = 4,
+    firingMod = 6,
     firingPoint = 2,
-    x = -20,
+    x = -102,   -- position on the model
+    y = 24
+  },
+  {
+    firingMod = 6,
+    firingPoint = 4,
+    x = -102,
+    y = -24
+  },
+  {
+    firingMod = 6,
+    firingPoint = 0,
+    x = -102,
     y = 0
   }
 }
 
-
-
 function draw()
-  glColor3f(0,0.3,1)
-  glBeginLines()
 
-    -- left front
-    glVertex2i(12,0)
-    glVertex2i(-2,-7)
-    
-    -- right front
-    glVertex2i(12,0)
-    glVertex2i(-2,7)
+    --front head SKUG
+    glColor3f(1,1,1)
+    glBeginPolygon()
+      glVertex2i(96,-30)
+      glVertex2i(96,30)
+      glVertex2i(120,18)
+      glVertex2i(120,-18)
+    glEnd()
 
-    --middle line
-    glVertex2i(12,0)
-    glVertex2i(-12,0)
- 
-    -- left edge
-    glVertex2i(1,-7)
-    glVertex2i(-11,-7)
+--middle head SKUG
+glColor3f(1,0,0)
+glBeginPolygon()
+  glVertex2i(96,-30)
+  glVertex2i(96,30)
+  glVertex2i(72,30)
+  glVertex2i(72,-30)
+glEnd()
 
-    --right edge
-    glVertex2i(1,7)
-    glVertex2i(-11,7)
-
-    --right middle
-    glVertex2i(-12,2)
-    glVertex2i(-2,2)
-
-    --left middle
-    glVertex2i(-12,-2)
-    glVertex2i(-2,-2)
-
-    --bottom
-    glVertex2i(-12,-2)
-    glVertex2i(-12,2)
-
-    --bottom wing reght
-    glVertex2i(-11,2)
-    glVertex2i(-11,7)
-
-    --bottom wing reght
-    glVertex2i(-11,-2)
-    glVertex2i(-11,-7)
-
-    --middle kanon
-    glColor3f(1,1,1)  -- white
-    glVertex2i(14,0)
-    glVertex2i(12,0)
-    glVertex2i(3,7)
-    glVertex2i(1,7)
-    glVertex2i(3,-7)
-    glVertex2i(1,-7)
-
+    --lower head SKUG
+  glColor3f(1,1,1)
+  glBeginPolygon()
+    glVertex2i(48,-18)
+    glVertex2i(48,18)
+    glVertex2i(72,30)
+    glVertex2i(72,-30)
   glEnd()
+
+    -- red neck SKUG
+  glColor3f(1,0,0)
+  glBeginPolygon()
+    glVertex2i(48,-18)
+    glVertex2i(48,18)
+    glVertex2i(0,18)
+    glVertex2i(0,-18)
+  glEnd()
+  -- white body front SKUG
+  glColor3f(1,1,1)
+  glBeginPolygon()
+    glVertex2i(-30,-36)
+    glVertex2i(-30,36)
+    glVertex2i(0,18)
+    glVertex2i(0,-18)
+  glEnd()
+
+  --big bad red box SKUG
+  glColor3f(1,0,0)
+  glBeginPolygon()
+    glVertex2i(-30,-36)
+    glVertex2i(-30,36)
+    glVertex2i(-96,36)
+    glVertex2i(-96,-36)
+  glEnd()
+
+  --left wing SKUG
+  glColor3f(1,1,1)
+  glBeginPolygon()
+    glVertex2i(-30,36)
+    glVertex2i(-124,14*6)
+    glVertex2i(-124,60)
+    glVertex2i(-96,36)
+  glEnd()
+
+  --right wing SKUG
+  glColor3f(1,1,1)
+  glBeginPolygon()
+    glVertex2i(-30,-36)
+    glVertex2i(-124,-14*6)
+    glVertex2i(-124,-60)
+    glVertex2i(-96,-36)
+  glEnd()
+
+   --motors
+   glColor3f(1,1,1)
+  glBeginPolygon()
+    glVertex2i(-96,-6)
+    glVertex2i(-96,6)
+    glVertex2i(-102,6)
+    glVertex2i(-102,-6)
+  glEnd()
+
 end
