@@ -328,16 +328,16 @@ void draw(){
   // go to our 1024x768 simple world
   setOverlayMode();
   
-  sprintf(buf,"FPS: %.1f",_fps);
+  snprintf(buf,20,"FPS: %.1f",_fps);
   printStringToRight(FONT_SMALL, false, &buf[0], 5, OVERLAY_Y-30);
-  sprintf(buf,"UPS: %.1f",_ups);
+  snprintf(buf,20,"UPS: %.1f",_ups);
   printStringToRight(FONT_SMALL, false, &buf[0], 5, OVERLAY_Y-50);
   
-  sprintf(buf,"Objects: %d",_numObj);
+  snprintf(buf,20,"Objects: %d",_numObj);
   printStringToLeft(FONT_SMALL, false, &buf[0], OVERLAY_X-5, OVERLAY_Y-30);
-  sprintf(buf,"Time: %ds",_time/1000);
+  snprintf(buf,20,"Time: %ds",_time/1000);
   printStringToLeft(FONT_SMALL, false, &buf[0], OVERLAY_X-5, OVERLAY_Y-50);
-  sprintf(buf,"Level: %d",_level);
+  snprintf(buf,20,"Level: %d",_level);
   printStringToLeft(FONT_SMALL, false, &buf[0], OVERLAY_X-5, OVERLAY_Y-90);
   
   // back to the real-world coordinate system

@@ -18,9 +18,11 @@ ifeq ("$(OS)","Darwin")
     #LDFLAGS = -framework Cocoa -framework OpenGL -framework SDL \
     #    -framework SDL_net
 
+else ifneq (,$(wildcard /etc/redhat-release))
+    # centos or redhat 8
+    CFLAGS += -DOPEN_GL='<GL/gl.h>' -DSDL_NET='<SDL/SDL_net.h>' -DLUA51 -I/usr/include/SDL
+    LDFLAGS = -lSDL -lSDL_net -lGL -lpthread -llua-5.1
 else
-    # not-OSX install
-    
     CFLAGS += -DOPEN_GL='<GL/gl.h>' -DSDL_NET='<SDL/SDL_net.h>' -DLUA53
     LDFLAGS = -lSDL -lSDL_net -lGL -lpthread -llua5.3
 endif

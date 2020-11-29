@@ -176,7 +176,8 @@ objecttype* alienwandertype::specialUpdate(){
   
     weaponLastFired[0] = _timestamp;
     
-    objecttype *oPtr = new shottype(this,angle,SHOT_MED,SHOT_DOUBLE,SHOT_NORM);
+    shotorigintype shotorigin = prepareShotOrigin(this,0,0,0,0,0);
+    objecttype *oPtr = new shottype(shotorigin,0,SHOT_MED,SHOT_DOUBLE,SHOT_NORM);
     oPtr->addToNewList();
   }
   if(weaponOn[1] && weaponGlow[1] < 5 && _timestamp - weaponLastFired[1] >= 100){
@@ -184,7 +185,8 @@ objecttype* alienwandertype::specialUpdate(){
   
     weaponLastFired[1] = _timestamp;
     
-    objecttype *oPtr = new shottype(this,angle+120,SHOT_MED,SHOT_DOUBLE,SHOT_NORM);
+    shotorigintype shotorigin = prepareShotOrigin(this,0,0,0,0,0);
+    objecttype *oPtr = new shottype(shotorigin,120,SHOT_MED,SHOT_DOUBLE,SHOT_NORM);
     oPtr->addToNewList();
   }
   if(weaponOn[2] && weaponGlow[2] < 5 && _timestamp - weaponLastFired[2] >= 100){
@@ -192,7 +194,8 @@ objecttype* alienwandertype::specialUpdate(){
   
     weaponLastFired[2] = _timestamp;
     
-    objecttype *oPtr = new shottype(this,angle+240,SHOT_MED,SHOT_DOUBLE,SHOT_NORM);
+    shotorigintype shotorigin = prepareShotOrigin(this,0,0,0,0,0);
+    objecttype *oPtr = new shottype(shotorigin,240,SHOT_MED,SHOT_DOUBLE,SHOT_NORM);
     oPtr->addToNewList();
   }
   

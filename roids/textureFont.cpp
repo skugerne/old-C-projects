@@ -140,7 +140,7 @@ void printStringCentered(fonttype font, bool italic, char *chars, double x, doub
 
 // output of a single character, using existing functions as much as possible
 void printCharToRight(fonttype font, bool italic, char oneChar, double x, double y){
-  char *chars = new char[2];
+  char chars[2];
   chars[0] = oneChar;
   chars[1] = 0;
   printStringWithOffset(font,italic,chars,x,y,0.0);

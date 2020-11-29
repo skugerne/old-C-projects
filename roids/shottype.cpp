@@ -12,6 +12,8 @@ shotnametype shotnametypeFromString(const char *in){
   exit(1);
 }
 
+
+
 // convert strings to shotcounttype
 shotcounttype shotcounttypeFromString(const char *in){
   if(strcmp(in,"SHOT_SINGLE") == 0) return SHOT_SINGLE;
@@ -21,6 +23,8 @@ shotcounttype shotcounttypeFromString(const char *in){
   fprintf(stderr,"Failed to translate %s.\n",in);
   exit(1);
 }
+
+
 
 // convert strings to shotmodtype
 shotmodtype shotmodtypeFromString(const char *in){
@@ -38,39 +42,49 @@ shotmodtype shotmodtypeFromString(const char *in){
 
 
 
-// for over-the-network creation
-shottype::shottype(objecttype *launcher, double lAngle,
-  shotnametype name, shotcounttype count, shotmodtype mod
-){
-  if(!launcher){
-    fprintf(stderr,"ERROR - shottype passed NULL launcher.\n");
-    isDead = true;
-    return;
-  }
+// prepare the x,y,dx,dy of a new shot
+// x:               location on the ship model before effect of any turret rotation
+// y:
+// turretAngle:     angle of the turret (0 being forward) (degrees)
+// xOffset:         offset where the shots emerge relative to the turret base (will be rotated)
+// yOffset:
+shotorigintype prepareShotOrigin(objecttype *launcher, float x, float y, float turretAngle, float xOffset, float yOffset){
+  shotorigintype origin;
+  origin.x = launcher->x();
+  origin.y = launcher->y();
+  origin.xChange = launcher->dx();
+  origin.yChange = launcher->dy();
+  origin.heading = launcher->a();
+  return origin;
+}
 
+
+
+shottype::shottype(shotorigintype shotorigin, double lAngle, shotnametype name, shotcounttype count, shotmodtype mod){
+  
   // recursively handle multiple shots
   switch (count){
     case SHOT_DOUBLE:{
       objecttype *oPtr;
-      oPtr = new shottype(launcher,lAngle+5,name,SHOT_SINGLE,mod);
+      oPtr = new shottype(shotorigin,lAngle+5,name,SHOT_SINGLE,mod);
       oPtr->addToNewList();
       lAngle -= 5;
       break;
     }case SHOT_TRIPPLE:{
       objecttype *oPtr;
-      oPtr = new shottype(launcher,lAngle,name,SHOT_SINGLE,mod);
+      oPtr = new shottype(shotorigin,lAngle,name,SHOT_SINGLE,mod);
       oPtr->addToNewList();
-      oPtr = new shottype(launcher,lAngle+10,name,SHOT_SINGLE,mod);
+      oPtr = new shottype(shotorigin,lAngle+10,name,SHOT_SINGLE,mod);
       oPtr->addToNewList();
       lAngle -= 10;
       break;
     }case SHOT_QUAD:{
       objecttype *oPtr;
-      oPtr = new shottype(launcher,lAngle-5,name,SHOT_SINGLE,mod);
+      oPtr = new shottype(shotorigin,lAngle-5,name,SHOT_SINGLE,mod);
       oPtr->addToNewList();
-      oPtr = new shottype(launcher,lAngle+5,name,SHOT_SINGLE,mod);
+      oPtr = new shottype(shotorigin,lAngle+5,name,SHOT_SINGLE,mod);
       oPtr->addToNewList();
-      oPtr = new shottype(launcher,lAngle+15,name,SHOT_SINGLE,mod);
+      oPtr = new shottype(shotorigin,lAngle+15,name,SHOT_SINGLE,mod);
       oPtr->addToNewList();
       lAngle -= 15;
       break;
@@ -98,12 +112,15 @@ shottype::shottype(objecttype *launcher, double lAngle,
   }
   
   // lAngle is expected in units of degrees
+  lAngle = shotorigin.heading + lAngle;
+  if(lAngle < 0) lAngle += 360.0;
+  else if(lAngle >= 360.0) lAngle -= 360.0;
   lAngle *= M_PI / 180;
   
-  xCoordinate = launcher->x() + launcher->r() * cos(lAngle);
-  yCoordinate = launcher->y() + launcher->r() * sin(lAngle);
-  xChange = launcher->dx() + speedFactor * cos(lAngle);
-  yChange = launcher->dy() + speedFactor * sin(lAngle);
+  xCoordinate = shotorigin.x;
+  yCoordinate = shotorigin.y;
+  xChange = shotorigin.xChange + speedFactor * cos(lAngle);
+  yChange = shotorigin.yChange + speedFactor * sin(lAngle);
   
   switch (name) {
     case SHOT_WEAK:

@@ -2,13 +2,21 @@
 #define ALIEN_LUA_HH
 
 #ifdef LUA53
-#include <lua5.3/lua.h>
-#include <lua5.3/lualib.h>
-#include <lua5.3/lauxlib.h>
+  #include <lua5.3/lua.h>
+  #include <lua5.3/lualib.h>
+  #include <lua5.3/lauxlib.h>
 #endif
 
 #ifdef LUA51
-// FIXME
+  extern "C" {
+    #include <lua-5.1/lua.h>
+    #include <lua-5.1/lualib.h>
+    #include <lua-5.1/lauxlib.h>
+  }
+
+  #ifndef LUA_OK
+    #define LUA_OK 0
+  #endif
 #endif
 
 
@@ -20,7 +28,7 @@ struct weapontype {
 
   float x;        // location on the ship model
   float y;
-  float angle;   // location where the shots emerge relative to the location
+  float angle;    // location where the shots emerge relative to the location
   float xOffset;
   float yOffset;
 

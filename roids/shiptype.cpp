@@ -93,11 +93,11 @@ void shiptype::draw(){
     glEnable(GL_BLEND);
     glColor4f(1,0,1,0.85);
   
-    sprintf(buf,"ahead:     %.2f",thrustStat1/DT);
+    snprintf(buf,30,"ahead:     %.2f",thrustStat1/DT);
     printStringToRight(FONT_SMALL,false,&buf[0],-25,125);
-    sprintf(buf,"sideways:  %.2f",thrustStat2/DT);
+    snprintf(buf,30,"sideways:  %.2f",thrustStat2/DT);
     printStringToRight(FONT_SMALL,false,&buf[0],-25,105);
-    sprintf(buf,"speed:     %.2f",thrustStat3/DT);
+    snprintf(buf,30,"speed:     %.2f",thrustStat3/DT);
     printStringToRight(FONT_SMALL,false,&buf[0],-25,85);
    
     glDisable(GL_BLEND);
@@ -217,7 +217,8 @@ objecttype* shiptype::specialUpdate(){
     weaponHeat[0] < weaponMaxHeat[0] && 
     weaponLastFire[0] + weaponReloadTime[0] <= _timestamp
   ){
-    objecttype *sPtr = new shottype(this,angle,SHOT_MED,SHOT_SINGLE,SHOT_NORM);
+    shotorigintype shotorigin = prepareShotOrigin(this,0,0,0,0,0);
+    objecttype *sPtr = new shottype(shotorigin,0,SHOT_MED,SHOT_SINGLE,SHOT_NORM);
     sPtr->addToNewList();
     
     #ifdef DEBUG_OBJECTTYPE
@@ -232,7 +233,8 @@ objecttype* shiptype::specialUpdate(){
     weaponHeat[1] < weaponMaxHeat[1] && 
     weaponLastFire[1] + weaponReloadTime[1] <= _timestamp
   ){
-    objecttype *sPtr = new shottype(this,angle,SHOT_MED,SHOT_QUAD,SHOT_PROX);
+    shotorigintype shotorigin = prepareShotOrigin(this,0,0,0,0,0);
+    objecttype *sPtr = new shottype(shotorigin,0,SHOT_MED,SHOT_QUAD,SHOT_PROX);
     sPtr->addToNewList();
     
     #ifdef DEBUG_OBJECTTYPE

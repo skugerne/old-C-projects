@@ -421,7 +421,8 @@ objecttype* alienluatype::specialUpdate(){
       ++weapons[i].glow;
       weapons[i].lastFired = _timestamp;
       
-      objecttype *oPtr = new shottype(this,weaponangle,weapons[i].shotname,weapons[i].shotcount,weapons[i].shotmod);
+      shotorigintype shotorigin = prepareShotOrigin(this,weapons[i].x,weapons[i].y,weapons[i].angle,weapons[i].xOffset,weapons[i].yOffset);
+      objecttype *oPtr = new shottype(shotorigin,0,weapons[i].shotname,weapons[i].shotcount,weapons[i].shotmod);
       oPtr->addToNewList();
     }
   }

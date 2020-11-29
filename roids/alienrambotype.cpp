@@ -249,7 +249,8 @@ objecttype* alienrambotype::specialUpdate(){
     
     weaponLastFired = _timestamp;
     
-    objecttype *oPtr = new shottype(this,angle+weaponAngle+90,SHOT_WEAK,SHOT_QUAD,SHOT_LONG);
+    shotorigintype shotorigin = prepareShotOrigin(this,0,0,0,0,0);
+    objecttype *oPtr = new shottype(shotorigin,weaponAngle+90,SHOT_WEAK,SHOT_QUAD,SHOT_LONG);
     oPtr->addToNewList();
   }
   
