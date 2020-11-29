@@ -1,14 +1,22 @@
 #ifndef ALIEN_LUA_HH
 #define ALIEN_LUA_HH
 
-extern "C" {
-#include <lua-5.1/lua.h>
-#include <lua-5.1/lualib.h>
-#include <lua-5.1/lauxlib.h>
-}
+#ifdef LUA53
+  #include <lua5.3/lua.h>
+  #include <lua5.3/lualib.h>
+  #include <lua5.3/lauxlib.h>
+#endif
 
-#ifndef LUA_OK
-#define LUA_OK 0
+#ifdef LUA51
+  extern "C" {
+    #include <lua-5.1/lua.h>
+    #include <lua-5.1/lualib.h>
+    #include <lua-5.1/lauxlib.h>
+  }
+
+  #ifndef LUA_OK
+    #define LUA_OK 0
+  #endif
 #endif
 
 

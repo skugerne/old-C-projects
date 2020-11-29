@@ -134,7 +134,14 @@ void alienluatype::init(){
 
   lua_getglobal(L, "weapons");
   fprintf(stderr,"The top of the stack has type (hopefully table): %d\n", lua_type(L,-1));
+  #ifdef LUA53
+  lua_len(L, -1);
+  numWeapons = lua_tonumber(L,-1);
+  lua_pop(L, 1);
+  #endif
+  #ifdef LUA51
   numWeapons = lua_objlen(L, -1);
+  #endif
   fprintf(stderr,"Number of weapons is %d.\n",numWeapons);
   lua_pop(L, 1);
 
@@ -204,7 +211,14 @@ void alienluatype::init(){
 
   lua_getglobal(L, "engines");
   fprintf(stderr,"The top of the stack has type (hopefully table): %d\n", lua_type(L,-1));
+  #ifdef LUA53
+  lua_len(L, -1);
+  numEngines = lua_tonumber(L,-1);
+  lua_pop(L, 1);
+  #endif
+  #ifdef LUA51
   numEngines = lua_objlen(L, -1);
+  #endif
   fprintf(stderr,"Number of engines is %d.\n",numEngines);
   lua_pop(L, 1);
 
