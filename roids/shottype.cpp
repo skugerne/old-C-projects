@@ -49,12 +49,20 @@ shotmodtype shotmodtypeFromString(const char *in){
 // xOffset:         offset where the shots emerge relative to the turret base (will be rotated)
 // yOffset:
 shotorigintype prepareShotOrigin(objecttype *launcher, float x, float y, float turretAngle, float xOffset, float yOffset){
+
+  // take into account the effect of any turret
+  float lAngle = turretAngle * M_PI / 180;
+  x = x + xOffset * cos(lAngle) + yOffset * sin(lAngle);
+  y = y + xOffset * sin(lAngle) - yOffset * cos(lAngle);
+
+  // take into account the ship itself
   shotorigintype origin;
-  origin.x = launcher->x();
-  origin.y = launcher->y();
+  lAngle = launcher->a() * M_PI / 180;
+  origin.x = launcher->x() + x * cos(lAngle) + y * sin(lAngle);
+  origin.y = launcher->y() + x * sin(lAngle) - y * cos(lAngle);
   origin.xChange = launcher->dx();
   origin.yChange = launcher->dy();
-  origin.heading = launcher->a();
+  origin.heading = angleLimit(launcher->a() + turretAngle);
   return origin;
 }
 
@@ -112,9 +120,7 @@ shottype::shottype(shotorigintype shotorigin, double lAngle, shotnametype name, 
   }
   
   // lAngle is expected in units of degrees
-  lAngle = shotorigin.heading + lAngle;
-  if(lAngle < 0) lAngle += 360.0;
-  else if(lAngle >= 360.0) lAngle -= 360.0;
+  lAngle = angleLimit(shotorigin.heading + lAngle);
   lAngle *= M_PI / 180;
   
   xCoordinate = shotorigin.x;

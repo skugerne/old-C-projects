@@ -13,15 +13,42 @@ shieldPoints = 100;
 
 weapons = {
   {
-    x = 2,         -- position on the model
+    x = 140,         -- position on the model
     y = 0,
     angle = 0,     -- relative to the model
     xOffset = 0,   -- additional offset to apply from x,y after rotation (if any)
     yOffset = 0,
-    fireDelay = 50,   -- compared to 1000 updates per second
+    fireDelay = 20,   -- compared to 1000 updates per second
     glowLimit = 30,
+    glowCoolRate = 0.75,   -- shots per second
     shotname = 'SHOT_WEAK',
     shotcount = 'SHOT_DOUBLE',
+    shotmod = 'SHOT_FAST_LONG'
+  },
+  {
+    x = 140,         -- position on the model
+    y = -10,
+    angle = 30,     -- relative to the model
+    xOffset = 0,   -- additional offset to apply from x,y after rotation (if any)
+    yOffset = 0,
+    fireDelay = 80,   -- compared to 1000 updates per second
+    glowLimit = 20,
+    glowCoolRate = 0.5,   -- shots per second
+    shotname = 'SHOT_WEAK',
+    shotcount = 'SHOT_SINGLE',
+    shotmod = 'SHOT_FAST_LONG'
+  },
+  {
+    x = 140,         -- position on the model
+    y = 10,
+    angle = -30,     -- relative to the model
+    xOffset = 0,   -- additional offset to apply from x,y after rotation (if any)
+    yOffset = 0,
+    fireDelay = 80,   -- compared to 1000 updates per second
+    glowLimit = 20,
+    glowCoolRate = 0.5,   -- shots per second
+    shotname = 'SHOT_WEAK',
+    shotcount = 'SHOT_SINGLE',
     shotmod = 'SHOT_FAST_LONG'
   }
 }
@@ -120,13 +147,34 @@ glEnd()
     glVertex2i(-96,-36)
   glEnd()
 
-   --motors
+   --middle motor
    glColor3f(1,1,1)
   glBeginPolygon()
-    glVertex2i(-96,-6)
-    glVertex2i(-96,6)
+    glVertex2i(-96,-4)
+    glVertex2i(-96,4)
+    glColor3f(0.3,0.3,0.3)
     glVertex2i(-102,6)
     glVertex2i(-102,-6)
+  glEnd()
+
+  --left motor
+  glColor3f(1,1,1)
+  glBeginPolygon()
+    glVertex2i(-96,-28)
+    glVertex2i(-96,-20)
+    glColor3f(0.3,0.3,0.3)
+    glVertex2i(-102,-18)
+    glVertex2i(-102,-30)
+  glEnd()
+
+  --right motor
+  glColor3f(1,1,1)
+  glBeginPolygon()
+    glVertex2i(-96,28)
+    glVertex2i(-96,20)
+    glColor3f(0.3,0.3,0.3)
+    glVertex2i(-102,18)
+    glVertex2i(-102,30)
   glEnd()
 
 end

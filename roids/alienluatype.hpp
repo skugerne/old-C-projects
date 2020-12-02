@@ -23,13 +23,14 @@
 
 struct weapontype {
   float glow;
+  float glowCoolRate;
   bool on;
   Uint lastFired;
 
   float x;        // location on the ship model
   float y;
-  float angle;    // location where the shots emerge relative to the location
-  float xOffset;
+  float angle;    // angle where the shots emerge relative to the location
+  float xOffset;  // offset at the given angle where shots emerge
   float yOffset;
 
   Uint fireDelay;

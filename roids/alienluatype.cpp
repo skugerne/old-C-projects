@@ -178,27 +178,26 @@ void alienluatype::init(){
 
     prepLuaTablePropery(i,"weapons","fireDelay");
     weapons[i].fireDelay = lua_tonumber(L,-1);
-    fprintf(stderr,"Set weapons[i].fireDelay to %d.\n",(int)weapons[i].fireDelay);
     lua_pop(L, 3);
 
     prepLuaTablePropery(i,"weapons","glowLimit");
     weapons[i].glowLimit = lua_tonumber(L,-1);
-    fprintf(stderr,"Set weapons[i].glowLimit to %d.\n",(int)weapons[i].glowLimit);
+    lua_pop(L, 3);
+
+    prepLuaTablePropery(i,"weapons","glowCoolRate");
+    weapons[i].glowCoolRate = lua_tonumber(L,-1);
     lua_pop(L, 3);
 
     prepLuaTablePropery(i,"weapons","shotname");
     weapons[i].shotname = shotnametypeFromString(lua_tostring(L,-1));
-    fprintf(stderr,"Set weapons[i].shotname to %d.\n",weapons[i].shotname);
     lua_pop(L, 3);
 
     prepLuaTablePropery(i,"weapons","shotcount");
     weapons[i].shotcount = shotcounttypeFromString(lua_tostring(L,-1));
-    fprintf(stderr,"Set weapons[i].shotcount to %d.\n",weapons[i].shotcount);
     lua_pop(L, 3);
 
     prepLuaTablePropery(i,"weapons","shotmod");
     weapons[i].shotmod = shotmodtypeFromString(lua_tostring(L,-1));
-    fprintf(stderr,"Set weapons[i].shotmod to %d.\n",weapons[i].shotmod);
     lua_pop(L, 3);
   }
 
@@ -381,7 +380,7 @@ objecttype* alienluatype::specialUpdate(){
   }
   for(Uint i=0; i<numWeapons; ++i)
     if(weapons[i].glow > 0){
-      weapons[i].glow -= DT / 2;
+      weapons[i].glow -= weapons[i].glowCoolRate * DT;
       if(weapons[i].glow < 0) weapons[i].glow = 0;
     }
   if(shieldGlow > 0){
@@ -401,9 +400,7 @@ objecttype* alienluatype::specialUpdate(){
   if(turningRight){
     angle -= turnRate;
   }
-
-  if(angle > 360) angle -= 360;
-  else if(angle < 0) angle += 360;
+  angle = angleLimit(angle);
 
   aiupdate();
 
@@ -414,13 +411,9 @@ objecttype* alienluatype::specialUpdate(){
 
   for(Uint i=0; i<numWeapons; ++i){
     if(weapons[i].on && weapons[i].glow < weapons[i].glowLimit && _timestamp - weapons[i].lastFired >= weapons[i].fireDelay){
-      float weaponangle = weapons[i].angle + angle;
-      if(weaponangle > 360) weaponangle -= 360;
-      else if(weaponangle < 0) weaponangle += 360;
-
       ++weapons[i].glow;
       weapons[i].lastFired = _timestamp;
-      
+
       shotorigintype shotorigin = prepareShotOrigin(this,weapons[i].x,weapons[i].y,weapons[i].angle,weapons[i].xOffset,weapons[i].yOffset);
       objecttype *oPtr = new shottype(shotorigin,0,weapons[i].shotname,weapons[i].shotcount,weapons[i].shotmod);
       oPtr->addToNewList();
@@ -484,13 +477,10 @@ void alienluatype::aifollow(objecttype *target, double deadAngle, double engineA
   //find the angle between facing and goal
   double distX = xCoordinate - target->x();
   double distY = yCoordinate - target->y();
-  double targetAngle = atan(distY/distX) / M_PI * 180 - angle + 180;
+  float targetAngle = atan(distY/distX) / M_PI * 180 - angle + 180;
   if(distX < 0)
     targetAngle += 180;
-  if(targetAngle >= 360.0)
-    targetAngle -= 360.0;
-  if(targetAngle < 0.0)
-    targetAngle += 360.0;
+  targetAngle = angleLimit(targetAngle);
 
   //handle turning to face target
   if((targetAngle > deadAngle) && (targetAngle < 180)){

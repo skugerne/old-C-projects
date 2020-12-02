@@ -5,6 +5,10 @@
 
 
 
+inline float angleLimit(float a){if(a < 0) a += 360.0; else if(a >= 360.0) a -= 360.0; return a;}
+
+
+
 // the root class of things that go bump in the night
 class objecttype {
   friend void collision(objecttype*,objecttype*);
