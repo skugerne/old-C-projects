@@ -404,7 +404,8 @@ objecttype* alienluatype::specialUpdate(){
   }
   angle = angleLimit(angle);
 
-  aiupdate();
+  if( _timestamp % AI_UPDATE_DIVISOR == 0 )
+    aiupdate();
 
   objecttype *oPtr = next;
   

@@ -68,7 +68,8 @@ typedef void *(*pthread_func_t)(void*);
 #define MAX_SHIP_SPECIALS 6
 #define MAX_SHIP_POWERSYS 5
 
-#define DT 0.001   // 1000 updates per sec
+#define DT 0.001                    // 1000 updates per second
+#define AI_UPDATE_DIVISOR 10        // 100 samples per second for AI or player
 
 #define NUM_SECTORS_PER_SIDE     256   // note: changing this breaks radar
 #define SECTOR_SIZE              512

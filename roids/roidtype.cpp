@@ -36,7 +36,7 @@ roidtype::roidtype(double X, double Y, double DX, double DY, double M){
 
 
 
-// moves it around
+// limit the lifespan of small asteroids, adjust visual representation of damage, rotate
 objecttype* roidtype::specialUpdate(){
 
   // asteriods created too small die after a bit (by shrinking!)

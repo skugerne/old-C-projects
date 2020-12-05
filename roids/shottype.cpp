@@ -177,7 +177,7 @@ shottype::shottype(shotorigintype shotorigin, double lAngle, shotnametype name, 
 
 
 
-// moves it around
+// watch the lifespan of the shot
 objecttype* shottype::specialUpdate(){
 
   // timer...

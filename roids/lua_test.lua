@@ -1,5 +1,7 @@
 print("Lua is loading!")
 
+require "math"
+
 radius = 150;   -- how large the collision circle and shield are
 
 mass = 100;   -- how heavy in collisions
@@ -74,27 +76,39 @@ engines = {
   }
 }
 
-function draw()
+function draw(timestamp)
 
-    --front head SKUG
-    glColor3f(1,1,1)
-    glBeginPolygon()
-      glVertex2i(96,-30)
-      glVertex2i(96,30)
-      glVertex2i(120,18)
-      glVertex2i(120,-18)
-    glEnd()
+  --front head SKUG
+  glColor3f(1,1,1)
+  glBeginPolygon()
+    glVertex2i(96,-30)
+    glVertex2i(96,30)
+    glVertex2i(120,18)
+    glVertex2i(120,-18)
+  glEnd()
 
---middle head SKUG
-glColor3f(1,0,0)
-glBeginPolygon()
-  glVertex2i(96,-30)
-  glVertex2i(96,30)
-  glVertex2i(72,30)
-  glVertex2i(72,-30)
-glEnd()
+  --middle head SKUG
+  glColor3f(1,0,0)
+  glBeginPolygon()
+    glVertex2i(96,-30)
+    glVertex2i(96,30)
+    glVertex2i(72,30)
+    glVertex2i(72,-30)
+  glEnd()
 
-    --lower head SKUG
+  -- little flashing thing
+  if math.floor(timestamp / 250) % 2 == 0 then
+    glColor3f(0,0,1)
+  else
+    glColor3f(0,1,0)
+  end
+  glBeginPolygon()
+    glVertex2i(85,-3)
+    glVertex2i(85,3)
+    glVertex2i(90,0)
+  glEnd()
+
+  --lower head SKUG
   glColor3f(1,1,1)
   glBeginPolygon()
     glVertex2i(48,-18)
@@ -177,4 +191,8 @@ glEnd()
     glVertex2i(-102,30)
   glEnd()
 
+end
+
+function ai_update()
+  print("AI update in Lua.")
 end
