@@ -55,6 +55,7 @@ struct enginetype {
 class alienluatype : public alientype {
   public:
     alienluatype(double,double,const char *);
+    int findHot(lua_State *);
     void aiupdate();
     void aifollow(objecttype*, double, double);
 

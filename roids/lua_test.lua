@@ -193,6 +193,7 @@ function draw(timestamp)
 
 end
 
-function ai_update()
+function aiUpdate()
   print("AI update in Lua.")
+  findHot(1,2,6)
 end

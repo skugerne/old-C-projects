@@ -2,6 +2,18 @@
 
 
 
+typedef int (alienluatype::*mem_func)(lua_State * L);
+
+// this template wraps a member function into a C-style "free" function compatible with lua
+// https://stackoverflow.com/questions/32416388/how-to-register-member-function-to-lua-without-lua-bind-in-c
+template <mem_func func>
+int dispatch(lua_State * L) {
+    alienluatype * ptr = *static_cast<alienluatype**>(lua_getextraspace(L));
+    return ((*ptr).*func)(L);
+}
+
+
+
 int luaGlColor4f(lua_State *L){
   float r = luaL_checknumber(L, 1);
   float g = luaL_checknumber(L, 2);
@@ -87,6 +99,9 @@ alienluatype::alienluatype(double X, double Y, const char *filename){
   lua_setglobal(L, "glEnableBlend");
   lua_pushcfunction(L, luaGlDisableBlend);
   lua_setglobal(L, "glDisableBlend");
+
+  // register some member functions to call back
+  lua_register(L, "findHot", &dispatch<&alienluatype::findHot>);
 
   // load the script
   if (luaL_loadfile(L, filename) == LUA_OK) {
@@ -404,8 +419,21 @@ objecttype* alienluatype::specialUpdate(){
   }
   angle = angleLimit(angle);
 
-  if( _timestamp % AI_UPDATE_DIVISOR == 0 )
+  if( _timestamp % AI_UPDATE_DIVISOR == 0 ){
     aiupdate();
+
+    // call out to Lua to draw our alien
+    lua_getglobal(L, "aiUpdate");
+    if (lua_isfunction(L, -1)) {
+      if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+        fprintf(stderr,"Failed to call the Lua aiUpdate function (item 2).\n");  // can be defective Lua code
+        exit(1);
+      }
+    } else {
+      fprintf(stderr,"Failed to call the Lua aiUpdate function (item 1).\n");
+      exit(1);
+    }
+  }
 
   objecttype *oPtr = next;
   
@@ -507,9 +535,18 @@ void alienluatype::aifollow(objecttype *target, double deadAngle, double engineA
   }
 }
 
- 
- 
- 
+
+
+int alienluatype::findHot(lua_State *L){
+  float r = luaL_checknumber(L, 1);
+  float g = luaL_checknumber(L, 2);
+  float b = luaL_checknumber(L, 3);
+  fprintf(stderr,"Got (%f) (%f) (%f).\n",r,g,b);
+  return 1;
+}
+
+
+
 void alienluatype::aiupdate(){
   // setting our direction
   if( _playerShip ) aifollow(_playerShip, 30, 20);
