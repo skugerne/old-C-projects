@@ -422,10 +422,11 @@ objecttype* alienluatype::specialUpdate(){
   if( _timestamp % AI_UPDATE_DIVISOR == 0 ){
     aiupdate();
 
-    // call out to Lua to draw our alien
+    // call out to Lua to draasLuaTablew our alien
     lua_getglobal(L, "aiUpdate");
     if (lua_isfunction(L, -1)) {
-      if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
+      asLuaTable(L);
+      if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
         fprintf(stderr,"Failed to call the Lua aiUpdate function (item 2).\n");  // can be defective Lua code
         exit(1);
       }

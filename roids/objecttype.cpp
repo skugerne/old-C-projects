@@ -243,6 +243,36 @@ void objecttype::moveToDead(){
 
 
 
+// load basic properties of this object into a Lua table, in the given Lua state handle
+void objecttype::asLuaTable(lua_State *targetL){
+  lua_createtable(targetL, 0, 6);
+
+  lua_pushnumber(targetL, xCoordinate);
+  lua_setfield(targetL, -2, "x");
+
+  lua_pushnumber(targetL, yCoordinate);
+  lua_setfield(targetL, -2, "y");
+
+  lua_pushnumber(targetL, xChange);
+  lua_setfield(targetL, -2, "dx");
+
+  lua_pushnumber(targetL, yChange);
+  lua_setfield(targetL, -2, "dy");
+
+  lua_pushnumber(targetL, detectabilityFactor);
+  lua_setfield(targetL, -2, "detectabilityFactor");
+
+  lua_pushnumber(targetL, visibilityFactor);
+  lua_setfield(targetL, -2, "visibilityFactor");
+
+  if(lua_type(targetL,-1) != LUA_TTABLE){
+    fprintf(stderr,"The top of the stack has type (should have table): %d\n", lua_type(targetL,-1));
+    exit(1);
+  }
+}
+
+
+
 // init function called by constructions of derived classes
 void objecttype::basicInit(){
   next = NULL;

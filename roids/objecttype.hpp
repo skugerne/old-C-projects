@@ -3,6 +3,24 @@
 
 #define INSTANT_DEATH 1000.0   // the most damage that there can be
 
+#ifdef LUA53
+  #include <lua5.3/lua.h>
+  #include <lua5.3/lualib.h>
+  #include <lua5.3/lauxlib.h>
+#endif
+
+#ifdef LUA51
+  extern "C" {
+    #include <lua-5.1/lua.h>
+    #include <lua-5.1/lualib.h>
+    #include <lua-5.1/lauxlib.h>
+  }
+
+  #ifndef LUA_OK
+    #define LUA_OK 0
+  #endif
+#endif
+
 
 
 inline float angleLimit(float a){if(a < 0) a += 360.0; else if(a >= 360.0) a -= 360.0; return a;}
@@ -56,7 +74,8 @@ class objecttype {
     objectcollisiontype getCollisionMod(){return collisionModifier;}
     double virtual getWarhead(objectcollisiontype) = 0;
     bool getDead(){return isDead;}
-    
+    void asLuaTable(lua_State *);
+
     #ifdef DEBUG_OBJECTTYPE
     Uint getID(){return idNum;}
     #endif

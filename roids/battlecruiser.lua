@@ -1,6 +1,7 @@
 print("Lua is loading!")
 
 require "math"
+require "string"
 
 radius = 150;   -- how large the collision circle and shield are
 
@@ -193,7 +194,7 @@ function draw(timestamp)
 
 end
 
-function aiUpdate()
-  print("AI update in Lua.")
+function aiUpdate(myself)
+  print(string.format("AI update in Lua ... (%s,%s)",myself.x,myself.y))
   findHot(1,2,6)
 end

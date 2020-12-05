@@ -331,6 +331,6 @@ void createAlienLuas(){
   if(y > MAX_COORDINATE) y = MAX_COORDINATE-1;
   if(y < 0) y = 0;
   
-  oPtr = new alienluatype(x,y,"lua_test.lua");
+  oPtr = new alienluatype(x,y,"battlecruiser.lua");
   oPtr->addToNewList();
 }
