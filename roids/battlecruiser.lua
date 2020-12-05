@@ -194,7 +194,34 @@ function draw(timestamp)
 
 end
 
-function aiUpdate(myself)
-  print(string.format("AI update in Lua ... (%s,%s)",myself.x,myself.y))
+
+
+-- recursively dump a table
+-- from https://stackoverflow.com/questions/9168058/how-to-dump-a-table-to-console
+function dump(o)
+  if type(o) == 'table' then
+     local s = '{ '
+     for k,v in pairs(o) do
+        if type(k) ~= 'number' then k = '"'..k..'"' end
+        s = s .. '['..k..'] = ' .. dump(v) .. ','
+     end
+     return s .. '} '
+  else
+     return tostring(o)
+  end
+end
+
+
+
+function aiUpdate(world)
+  print(
+    string.format(
+      "AI update in Lua ... myself (%0.02f,%0.02f) ... star (%0.02f,%0.02f).",
+      world.myself.x,
+      world.myself.y,
+      world.massiveObjects[1].x,
+      world.massiveObjects[1].y
+    )
+  )
   findHot(1,2,6)
 end

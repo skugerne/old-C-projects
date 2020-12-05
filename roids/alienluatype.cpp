@@ -419,22 +419,8 @@ objecttype* alienluatype::specialUpdate(){
   }
   angle = angleLimit(angle);
 
-  if( _timestamp % AI_UPDATE_DIVISOR == 0 ){
+  if( _timestamp % AI_UPDATE_DIVISOR == 0 )
     aiupdate();
-
-    // call out to Lua to draasLuaTablew our alien
-    lua_getglobal(L, "aiUpdate");
-    if (lua_isfunction(L, -1)) {
-      asLuaTable(L);
-      if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
-        fprintf(stderr,"Failed to call the Lua aiUpdate function (item 2).\n");  // can be defective Lua code
-        exit(1);
-      }
-    } else {
-      fprintf(stderr,"Failed to call the Lua aiUpdate function (item 1).\n");
-      exit(1);
-    }
-  }
 
   objecttype *oPtr = next;
   
@@ -551,4 +537,36 @@ int alienluatype::findHot(lua_State *L){
 void alienluatype::aiupdate(){
   // setting our direction
   if( _playerShip ) aifollow(_playerShip, 30, 20);
+
+
+  // call out to Lua to manage the AI choices
+  lua_getglobal(L, "aiUpdate");
+  if (lua_isfunction(L, -1)) {
+    // we need to send in a nested table
+
+    lua_createtable(L, 0, 3);               // NOTE: should match number of items
+
+    lua_pushnumber(L, MAX_COORDINATE);
+    lua_setfield(L, -2, "maxCoordinate");   // the AI needs to know how big the map is
+
+    asLuaTable(L);
+    lua_setfield(L, -2, "myself");          // the AI needs to know where it is
+
+    lua_createtable(L, 1, 0);               // NOTE: should match number of items (a list)
+
+    // if there is multiple massive objects, this should be a loop
+    lua_pushnumber(L, 1);                   // add at indexes, starting at 1
+    _starCore->asLuaTable(L);
+    lua_settable(L, -3);                    // note syntax for adding at an index
+
+    lua_setfield(L, -2, "massiveObjects");  // the AI needs to know about the massive objects
+
+    if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+      fprintf(stderr,"Failed to call the Lua aiUpdate function (item 2).\n");  // can be defective Lua code
+      exit(1);
+    }
+  } else {
+    fprintf(stderr,"Failed to call the Lua aiUpdate function (item 1).\n");
+    exit(1);
+  }
 }
