@@ -54,9 +54,7 @@ struct enginetype {
 
 class alienluatype : public alientype {
   public:
-    alienluatype(double,double);
-    void prepLuaTablePropery(Uint, const char *, const char *);
-    void init();
+    alienluatype(double,double,const char *);
     void aiupdate();
     void aifollow(objecttype*, double, double);
 
@@ -69,6 +67,8 @@ class alienluatype : public alientype {
 
     double getWarhead(objectcollisiontype){return 0.0;}
   protected:
+    void prepLuaTablePropery(Uint, const char *);
+    void init();
     
     Uint numWeapons;
     weapontype *weapons;

@@ -53,7 +53,7 @@ int luaGlDisableBlend(lua_State *L){
 
 
 
-alienluatype::alienluatype(double X, double Y){
+alienluatype::alienluatype(double X, double Y, const char *filename){
   xCoordinate = X;
   yCoordinate = Y;
   xChange = 0;
@@ -64,8 +64,7 @@ alienluatype::alienluatype(double X, double Y){
 
   basicInit();
 
-  fprintf(stderr,"Before Lua.\n");
-  fflush(stderr);
+  fprintf(stderr,"Before starting Lua for %s.\n",filename);
 
   // fire up a Lua instance for this alien
   L = luaL_newstate();
@@ -90,7 +89,7 @@ alienluatype::alienluatype(double X, double Y){
   lua_setglobal(L, "glDisableBlend");
 
   // load the script
-  if (luaL_loadfile(L, "lua_test.lua") == LUA_OK) {
+  if (luaL_loadfile(L, filename) == LUA_OK) {
       if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
           fprintf(stderr,"Seem to have have failed to load the Lua script (item 2).\n");
           exit(1);
@@ -116,14 +115,12 @@ alienluatype::alienluatype(double X, double Y){
 
 
 
-void alienluatype::prepLuaTablePropery(Uint index, const char *table, const char *prop){
-  lua_getglobal(L, table);
+void alienluatype::prepLuaTablePropery(Uint index, const char *prop){
   lua_pushinteger(L, index+1);
   lua_gettable(L, -2);
   lua_pushstring(L, prop);
   lua_gettable(L, -2);
   fprintf(stderr,"The top of the stack has type (hopefully string or number): %d\n", lua_type(L,-1));
-  fflush(stderr);
 }
 
 
@@ -156,47 +153,49 @@ void alienluatype::init(){
     weapons[i].on = false;
     weapons[i].lastFired = 0;
 
-    prepLuaTablePropery(i,"weapons","x");
+    lua_getglobal(L, "weapons");
+
+    prepLuaTablePropery(i,"x");
     weapons[i].x = lua_tonumber(L,-1);
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 
-    prepLuaTablePropery(i,"weapons","y");
+    prepLuaTablePropery(i,"y");
     weapons[i].y = lua_tonumber(L,-1);
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 
-    prepLuaTablePropery(i,"weapons","angle");
+    prepLuaTablePropery(i,"angle");
     weapons[i].angle = lua_tonumber(L,-1);
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 
-    prepLuaTablePropery(i,"weapons","xOffset");
+    prepLuaTablePropery(i,"xOffset");
     weapons[i].xOffset = lua_tonumber(L,-1);
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 
-    prepLuaTablePropery(i,"weapons","yOffset");
+    prepLuaTablePropery(i,"yOffset");
     weapons[i].yOffset = lua_tonumber(L,-1);
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 
-    prepLuaTablePropery(i,"weapons","fireDelay");
+    prepLuaTablePropery(i,"fireDelay");
     weapons[i].fireDelay = lua_tonumber(L,-1);
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 
-    prepLuaTablePropery(i,"weapons","glowLimit");
+    prepLuaTablePropery(i,"glowLimit");
     weapons[i].glowLimit = lua_tonumber(L,-1);
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 
-    prepLuaTablePropery(i,"weapons","glowCoolRate");
+    prepLuaTablePropery(i,"glowCoolRate");
     weapons[i].glowCoolRate = lua_tonumber(L,-1);
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 
-    prepLuaTablePropery(i,"weapons","shotname");
+    prepLuaTablePropery(i,"shotname");
     weapons[i].shotname = shotnametypeFromString(lua_tostring(L,-1));
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 
-    prepLuaTablePropery(i,"weapons","shotcount");
+    prepLuaTablePropery(i,"shotcount");
     weapons[i].shotcount = shotcounttypeFromString(lua_tostring(L,-1));
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 
-    prepLuaTablePropery(i,"weapons","shotmod");
+    prepLuaTablePropery(i,"shotmod");
     weapons[i].shotmod = shotmodtypeFromString(lua_tostring(L,-1));
     lua_pop(L, 3);
   }
@@ -228,19 +227,21 @@ void alienluatype::init(){
 
   engines = new enginetype[numEngines];
   for(Uint i=0; i<numEngines; ++i){
-    prepLuaTablePropery(i,"engines","firingMod");
+    lua_getglobal(L, "engines");
+
+    prepLuaTablePropery(i,"firingMod");
     engines[i].firingMod = lua_tonumber(L,-1);
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 
-    prepLuaTablePropery(i,"engines","firingPoint");
+    prepLuaTablePropery(i,"firingPoint");
     engines[i].firingPoint = lua_tonumber(L,-1);
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 
-    prepLuaTablePropery(i,"engines","x");
+    prepLuaTablePropery(i,"x");
     engines[i].x = lua_tonumber(L,-1);
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 
-    prepLuaTablePropery(i,"engines","y");
+    prepLuaTablePropery(i,"y");
     engines[i].y = lua_tonumber(L,-1);
     lua_pop(L, 3);
   }
