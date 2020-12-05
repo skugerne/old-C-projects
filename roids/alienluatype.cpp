@@ -300,13 +300,14 @@ void alienluatype::draw(){
   // call out to Lua to draw our alien
   lua_getglobal(L, "draw");
   if (lua_isfunction(L, -1)) {  // -1 is the element just pushed, a function
-      if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-          fprintf(stderr,"Failed to call the Lua draw function (item 2).\n");  // can be defective Lua code
-          exit(1);
-      }
-  } else {
-      fprintf(stderr,"Failed to call the Lua draw function (item 1).\n");
+    lua_pushnumber(L, _timestamp);   // push an argument to the func
+    if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+      fprintf(stderr,"Failed to call the Lua draw function (item 2).\n");  // can be defective Lua code
       exit(1);
+    }
+  } else {
+    fprintf(stderr,"Failed to call the Lua draw function (item 1).\n");
+    exit(1);
   }
  
   drawShield(); 
