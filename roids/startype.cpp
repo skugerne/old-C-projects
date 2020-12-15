@@ -9,6 +9,7 @@ startype::startype(double X, double Y, double DX, double DY, double M){
   xChange = DX;
   yChange = DY;
   mass = M;
+  hasGravity = true;
   
   // variable used for the usual object interactions, not for drawing
   radius = STAR_RADIUS;

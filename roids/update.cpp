@@ -8,11 +8,6 @@ Uint lastShipTransMSec;
 // alien creation timers
 Uint lastAF_MSec, lastAR_MSec, lastAW_MSec, lastAL_MSec;
 
-#ifdef ROIDS_SMP_MODE
-#define SMP_WORK_GROUP_COUNT 4
-SDL_mutex* smp_work_groups[SMP_WORK_GROUP_COUNT];
-#endif
-
 
 
 void initUpdate(){
@@ -62,7 +57,7 @@ void initUpdate(){
           
       double dist = sqrt( xDist * xDist + yDist * yDist );
       double angle = atan( yDist / xDist );
-      double accel = DT * DT * GRAVITY_CONST / (dist * dist);
+      double accel = _starCore->g() / (dist * dist);
       
       // take a moment to observe if this sector is "near" the center
       if(accel > .001) _sectors[i][j].nearCenter = true;
@@ -97,12 +92,6 @@ void initUpdate(){
       _radar[i][j][!_radarNew].detectability = 0;
     }
   }
-  
-  #ifdef ROIDS_SMP_MODE
-  for(int i=0;i<SMP_WORK_GROUP_COUNT;++i){
-    smp_work_groups[i] = SDL_CreateMutex();
-  }
-  #endif
 }
 
 
@@ -164,146 +153,27 @@ void handleNetTraffic(){
 
 
 
-#ifdef ROIDS_SMP_MODE
-int smp_sectorUpdate(void*){
-  // this function depends on _numObj > SMP_WORK_GROUP_COUNT
+// function to hide the various stages of the bulk object updating
+void objectUpdateWrapper(){
+  objecttype *oPtr;
+    
+  // *********************************************************************
+  // basic updates
   
-  int groupsize = _numObj / SMP_WORK_GROUP_COUNT;
-  int group_index = 0;
-  int last_group_index = -1;
-  int object_index = 0;
-  objecttype *oPtr = _objects;
-  
+  oPtr = _objects;
   while( oPtr ){
-    group_index = object_index / groupsize;
-    if( group_index >= SMP_WORK_GROUP_COUNT ) group_index = SMP_WORK_GROUP_COUNT - 1;
-    
-    if( group_index != last_group_index ){
-      if( last_group_index != -1 )
-        if( SDL_mutexV(smp_work_groups[last_group_index]) == -1 ){
-          fprintf(stderr, "ERROR - Couldn't unlock mutex\n");
-          exit(-1);
-        }
-      
-      if( SDL_mutexP(smp_work_groups[group_index]) == -1 ){
-        fprintf(stderr, "ERROR - Couldn't lock mutex (1)\n");
-        exit(-1);
-      }
-      
-      last_group_index = group_index;
-    }
-    
-    ++object_index;
-    
+    // apply dx and dy, apply gravity, watch map edges, determine sector
+    // update returns the pointer to the next object
+    oPtr = oPtr->update();
+  }
+  
+  oPtr = _objects;
+  while( oPtr ){
     // add to sector, look for collisions, resolve collisions (and death)
     // sectorUpdate returns the pointer to the next object, when an object 
     //   is moved to the dead list, meddling with next/prev pointers happens
     oPtr = oPtr->sectorUpdate();
   }
-  
-  if( SDL_mutexV(smp_work_groups[last_group_index]) == -1 ){
-    fprintf(stderr, "ERROR - Couldn't unlock mutex\n");
-    exit(-1);
-  }
-  
-  return 0;
-}
-
-
-
-void smp_baseUpdate(){
-  // this function depends on _numObj > SMP_WORK_GROUP_COUNT
-  
-  int groupsize = _numObj / SMP_WORK_GROUP_COUNT;
-  int group_index = 0;
-  int last_group_index = -1;
-  int object_index = 0;
-  objecttype *oPtr = _objects;
-  
-  while( oPtr ){
-    group_index = object_index / groupsize;
-    if( group_index >= SMP_WORK_GROUP_COUNT ) group_index = SMP_WORK_GROUP_COUNT - 1;
-    //printf("Object %d => group index %d at smp_baseUpdate.\n",object_index,group_index);
-    
-    if( group_index != last_group_index ){
-      //printf("Group index %d wanted at smp_baseUpdate.\n",group_index);
-      if( last_group_index != -1 ){
-        if( SDL_mutexP(smp_work_groups[group_index]) == -1 ){
-          fprintf(stderr, "ERROR - Couldn't lock mutex (2)\n");
-          exit(-1);
-        }
-        if( SDL_mutexV(smp_work_groups[last_group_index]) == -1 ){
-          fprintf(stderr, "ERROR - Couldn't unlock mutex\n");
-          exit(-1);
-        }
-      }
-      last_group_index = group_index;
-    }
-    
-    ++object_index;
-    
-    // add to sector, look for collisions, resolve collisions (and death)
-    // sectorUpdate returns the pointer to the next object, when an object 
-    //   is moved to the dead list, meddling with next/prev pointers happens
-    oPtr = oPtr->update();
-  }
-  
-  if( SDL_mutexV(smp_work_groups[last_group_index]) == -1 ){
-    fprintf(stderr, "ERROR - Couldn't unlock mutex\n");
-    exit(-1);
-  }
-}
-#endif
-
-
-
-// function to hide the various stages of the bulk object updating
-// also hides the handling of optional SMP support
-void objectUpdateWrapper(){
-  objecttype *oPtr;  
-  
-  #ifdef ROIDS_SMP_MODE
-  if( _numObj < 2 * SMP_WORK_GROUP_COUNT ){
-  #endif
-    
-    // *********************************************************************
-    // simple case where these is no threading
-    
-    oPtr = _objects;
-    while( oPtr ){
-      // apply dx and dy, apply gravity, watch map edges, determine sector
-      // update returns the pointer to the next object
-      oPtr = oPtr->update();
-    }
-    
-    oPtr = _objects;
-    while( oPtr ){
-      // add to sector, look for collisions, resolve collisions (and death)
-      // sectorUpdate returns the pointer to the next object, when an object 
-      //   is moved to the dead list, meddling with next/prev pointers happens
-      oPtr = oPtr->sectorUpdate();
-    }
-    
-  #ifdef ROIDS_SMP_MODE
-  }else{
-    
-    // *********************************************************************
-    // case where there is threading
-    
-    if( SDL_mutexP(smp_work_groups[0]) == -1 ){
-      fprintf(stderr, "ERROR - Couldn't lock mutex (3)\n");
-      exit(-1);
-    }
-    
-    SDL_Thread *sectorThread = SDL_CreateThread(smp_sectorUpdate,NULL);
-    
-    smp_baseUpdate();
-    
-    int result;
-    SDL_WaitThread(sectorThread,&result);
-    
-  }
-  #endif
   
   // ***********************************************************************
   // special updates (mostly AI updates) must always be done after the
@@ -356,7 +226,6 @@ void updateObjects(int iterations){
     _starCore->specialUpdate();
     
     // function to hide the various stages of the bulk object updating
-    // also hides the handling of optional SMP support
     objectUpdateWrapper();
     
     // *********************************************************************
@@ -424,8 +293,8 @@ void update(int iterations){
   // *********************************************************************
   // create aliens
   
-  if(lastAF_MSec - SDL_GetTicks() > 10000){
-    lastAF_MSec += 10000;
+  if(lastAF_MSec - SDL_GetTicks() > 3000){
+    lastAF_MSec += 3000;
     createAlienFighters();
   }
   
@@ -439,8 +308,8 @@ void update(int iterations){
     createAlienWanderers();
   }
   
-  if(lastAL_MSec - SDL_GetTicks() > 5000){
-    lastAL_MSec += 5000;
+  if(lastAL_MSec - SDL_GetTicks() > 10000){
+    lastAL_MSec += 10000;
     createAlienLuas();
   }
   

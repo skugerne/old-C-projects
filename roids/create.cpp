@@ -91,7 +91,7 @@ void intoOrbit(double x, double y, double &dx, double &dy){
   double ydist = y - MAX_COORDINATE/2;
   double dist = sqrt(xdist*xdist + ydist*ydist);
   
-  double orb_per = 2 * M_PI * pow(dist,1.5) / sqrt(GRAVITY_CONST);
+  double orb_per = 2 * M_PI * pow(dist,1.5) / sqrt(GRAVITY_CONST * _starCore->m());
   double orb_rate = DT * M_PI * 2 * dist / orb_per;
   double angle = atan(ydist/xdist);
   
@@ -102,19 +102,6 @@ void intoOrbit(double x, double y, double &dx, double &dy){
     dx = sin(angle) * orb_rate;
     dy = -cos(angle) * orb_rate;
   }
-  
-  /*
-  for(int i=0;i<19;++i){
-    x = 10.0 * cos( 2 * M_PI * ((double)(i+1) / 19.0));
-    y = 10.0 * sin( 2 * M_PI * ((double)(i+1) / 19.0));
-    dist = sqrt(x*x + y*y);
-    angle = atan(y/x);
-    dx = sin(angle) * 10.0;
-    dy = cos(angle) * 10.0;
-    printf("%d: x%f y%f dist%f angle%f dx%f dy%f\n",i,x,y,dist,angle/M_PI*180.0,dx,dy);
-  }
-  exit(0);
-  */
 }
 
 
@@ -324,10 +311,10 @@ void createAlienWanderers(){
 void createAlienLuas(){
   objecttype *oPtr;
 
-  float x = _player->x() + 400 - (_time * 13 % 800);
+  float x = _player->x() + 800 - (_time * 13 % 1600);
   if(x > MAX_COORDINATE) x = MAX_COORDINATE-1;
   if(x < 0) x = 0;
-  float y = _player->y() + 400 - (_time * 27 % 800);
+  float y = _player->y() + 800 - (_time * 27 % 1600);
   if(y > MAX_COORDINATE) y = MAX_COORDINATE-1;
   if(y < 0) y = 0;
   

@@ -596,7 +596,7 @@ void objecttype::gravitate(){
     double yDist = MAX_COORDINATE/2 - yCoordinate;
     double dist = sqrt( xDist * xDist + yDist * yDist );
     double angle = atan( yDist / xDist );
-    double accel = DT * DT * GRAVITY_CONST / (dist * dist);
+    double accel = _starCore->g() / (dist * dist);
       
     // divide acceleration into x and y components
     if(xDist < 0){

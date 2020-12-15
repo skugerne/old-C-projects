@@ -61,15 +61,13 @@ typedef void *(*pthread_func_t)(void*);
 
 
 
-//#define ROIDS_SMP_MODE
-
 #define MAX_SHIP_SLOTS 19
 #define MAX_SHIP_WEAPONS 4
 #define MAX_SHIP_SPECIALS 6
 #define MAX_SHIP_POWERSYS 5
 
 #define DT 0.001                    // 1000 updates per second
-#define AI_UPDATE_DIVISOR 10        // 100 samples per second for AI or player
+#define AI_UPDATE_DIVISOR 10        // 100 control samples per second for AI or player
 
 #define NUM_SECTORS_PER_SIDE     256   // note: changing this breaks radar
 #define SECTOR_SIZE              512
@@ -83,7 +81,7 @@ typedef void *(*pthread_func_t)(void*);
 #define OVERLAY_HALF_Y OVERLAY_Y/2
 
 #define MAX_ASTERIOD_MASS 150
-#define GRAVITY_CONST 2500000000.0
+#define GRAVITY_CONST 100.0
 
 #define NET_BUFFER_SIZE 20   // if this is too small data may be lost
 #define NUM_KEYS 8
@@ -188,8 +186,6 @@ class roidtype;
 class starfieldtype;
 
 class startype;
-
-// alien, life, etc classes
 
 
 

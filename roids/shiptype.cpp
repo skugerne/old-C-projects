@@ -159,8 +159,7 @@ objecttype* shiptype::specialUpdate(){
   if(turningLeft && turningRight){
     //xChange = 0;
     //yChange = 0;
-    if( _timestamp % 500 == 0 )
-      intoOrbit(xCoordinate,yCoordinate,xChange,yChange);
+    intoOrbit(xCoordinate,yCoordinate,xChange,yChange);
   }
   
   if(turningLeft){

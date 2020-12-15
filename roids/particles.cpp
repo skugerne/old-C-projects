@@ -265,7 +265,7 @@ void updateParticle(particlesystemtype *system, Uint index){
     part->y > 0 && sectorY < NUM_SECTORS_PER_SIDE )
   {
   
-    // gravitate ... care only when close to star
+    // gravitate ... care only when close to star ... don't do accurate math
     if( _sectors[sectorX][sectorY].nearCenter ){
       part->dx += _sectors[sectorX][sectorY].xAccel;
       part->dy += _sectors[sectorX][sectorY].yAccel;

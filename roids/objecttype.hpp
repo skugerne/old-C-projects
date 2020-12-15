@@ -68,6 +68,7 @@ class objecttype {
     double* aPtr(){return &angle;}
     double r(){return radius;}
     double m(){return mass;}
+    double g(){if(hasGravity){return DT * DT * GRAVITY_CONST * mass;}else{return 0.0;}}
     const char* name(){return nameString;}
     double getDetectability(){return detectabilityFactor;}
     double getVisibility(){return visibilityFactor;}
@@ -128,6 +129,7 @@ class objecttype {
     double angle;
     double mass;
     double radius;
+    bool hasGravity;
     
     double visibilityFactor, baseVisibility;
     double detectabilityFactor;

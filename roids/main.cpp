@@ -117,10 +117,10 @@ void init(){
   _playerShip = NULL;
   _otherPlayerShip = NULL;
   
-  resetForNewGame();
-  
   // the star core ... which we don't add to the list and which needs no resetting
-  _starCore = new startype(MAX_COORDINATE/2,MAX_COORDINATE/2,0,0,250000);
+  _starCore = new startype(MAX_COORDINATE/2,MAX_COORDINATE/2,0,0,25000000);
+  
+  resetForNewGame();
   
   initParticles();
   
