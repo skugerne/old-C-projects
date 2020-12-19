@@ -76,11 +76,16 @@ alienluatype::alienluatype(double X, double Y, const char *filename){
 
   basicInit();
 
+  #ifdef DEBUG_OBJECTTYPE
+  fprintf(stderr,"In alienluatype::alienluatype for idNum %u.\n",idNum);
+  #endif
+
   fprintf(stderr,"Before starting Lua for %s.\n",filename);
 
   // fire up a Lua instance for this alien
   L = luaL_newstate();
   luaL_openlibs(L);
+  *static_cast<alienluatype**>(lua_getextraspace(L)) = this;
 
   // register some C functions it can call back (basically specific calls to OpenGL)
   lua_pushcfunction(L, luaGlColor4f);
@@ -123,10 +128,6 @@ alienluatype::alienluatype(double X, double Y, const char *filename){
   }
 
   init();
-
-  #ifdef DEBUG_OBJECTTYPE
-  fprintf(stdout,"In alienluatype::alienluatype for ID %d.\n",idNum);
-  #endif
 }
 
 
@@ -591,7 +592,7 @@ int alienluatype::findHot(lua_State *L){
 
 int alienluatype::setEngine(lua_State *L){
   #ifdef DEBUG_OBJECTTYPE
-  fprintf(stdout,"In alienluatype::setEngine for ID %d.\n",idNum);
+  fprintf(stderr,"In alienluatype::setEngine for idNum %u.\n",idNum);
   #endif
   engineOn = lua_toboolean(L, 1);
   fprintf(stdout,"engineOn %d\n",engineOn);
