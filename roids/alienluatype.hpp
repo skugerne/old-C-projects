@@ -37,7 +37,6 @@ struct enginetype {
 class alienluatype : public alientype {
   public:
     alienluatype(double,double,const char *);
-    int findHot(lua_State *);
     void aiupdate();
     void aifollow(objecttype*, double, double);
 
@@ -52,6 +51,11 @@ class alienluatype : public alientype {
   protected:
     void prepLuaTablePropery(Uint, const char *);
     void init();
+
+    int findHot(lua_State *);
+    int setEngine(lua_State *);
+    int setTurnLeft(lua_State *);
+    int setTurnRight(lua_State *);
     
     Uint numWeapons;
     weapontype *weapons;

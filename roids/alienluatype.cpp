@@ -102,6 +102,9 @@ alienluatype::alienluatype(double X, double Y, const char *filename){
 
   // register some member functions to call back
   lua_register(L, "findHot", &dispatch<&alienluatype::findHot>);
+  lua_register(L, "setEngine", &dispatch<&alienluatype::setEngine>);
+  lua_register(L, "setTurnLeft", &dispatch<&alienluatype::setTurnLeft>);
+  lua_register(L, "setTurnRight", &dispatch<&alienluatype::setTurnRight>);
 
   // load the script
   if (luaL_loadfile(L, filename) == LUA_OK) {
@@ -524,20 +527,9 @@ void alienluatype::aifollow(objecttype *target, double deadAngle, double engineA
 
 
 
-int alienluatype::findHot(lua_State *L){
-  float r = luaL_checknumber(L, 1);
-  float g = luaL_checknumber(L, 2);
-  float b = luaL_checknumber(L, 3);
-  fprintf(stderr,"Got (%f) (%f) (%f).\n",r,g,b);
-  return 1;
-}
-
-
-
 void alienluatype::aiupdate(){
-  // setting our direction
+  // setting our direction (to be moved to Lua)
   if( _playerShip ) aifollow(_playerShip, 30, 20);
-
 
   // call out to Lua to manage the AI choices
   lua_getglobal(L, "aiUpdate");
@@ -549,12 +541,20 @@ void alienluatype::aiupdate(){
     lua_pushnumber(L, MAX_COORDINATE);
     lua_setfield(L, -2, "maxCoordinate");   // the AI needs to know how big the map is
 
+    // add standard object properties as a table
     asLuaTable(L);
+
+    // add extra properties to self-table
+    lua_pushnumber(L, angle / (2 * M_PI));
+    lua_setfield(L, -2, "angle");
+
+    // attach table about self
     lua_setfield(L, -2, "myself");          // the AI needs to know where it is
 
+    // a list of massive objects to be afraid of
     lua_createtable(L, 1, 0);               // NOTE: should match number of items (a list)
 
-    // if there is multiple massive objects, this should be a loop
+    // FIXME: if there is multiple massive objects, this should be a loop
     lua_pushnumber(L, 1);                   // add at indexes, starting at 1
     _starCore->asLuaTable(L);
     lua_settable(L, -3);                    // note syntax for adding at an index
@@ -569,4 +569,35 @@ void alienluatype::aiupdate(){
     fprintf(stderr,"Failed to call the Lua aiUpdate function (item 1).\n");
     exit(1);
   }
+}
+
+
+
+int alienluatype::findHot(lua_State *L){
+  float r = luaL_checknumber(L, 1);
+  float g = luaL_checknumber(L, 2);   // or luaL_tonumber() ?
+  float b = luaL_checknumber(L, 3);
+  fprintf(stderr,"Got (%f) (%f) (%f).\n",r,g,b);
+  return 1;
+}
+
+
+
+int alienluatype::setEngine(lua_State *L){
+  engineOn = lua_toboolean(L, 1);
+  return 1;
+}
+
+
+
+int alienluatype::setTurnLeft(lua_State *L){
+  turningLeft = lua_toboolean(L, 1);
+  return 1;
+}
+
+
+
+int alienluatype::setTurnRight(lua_State *L){
+  turningRight = lua_toboolean(L, 1);
+  return 1;
 }

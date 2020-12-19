@@ -259,6 +259,9 @@ void objecttype::asLuaTable(lua_State *targetL){
   lua_pushnumber(targetL, yChange);
   lua_setfield(targetL, -2, "dy");
 
+  lua_pushnumber(targetL, g());     // how much this object attracts not-massive things
+  lua_setfield(targetL, -2, "g");   // divide by distance squared to get acceleration per DT
+
   lua_pushnumber(targetL, detectabilityFactor);
   lua_setfield(targetL, -2, "detectabilityFactor");
 

@@ -32,8 +32,8 @@ shiptype::shiptype(shipnametype MODE, double X, double Y){
   // I am initializing various properties of this ship that are in fact ...
   // ... dependant on installed parts.  This is temporary.
   
-  shldStrength = 50;
-  shldMaxStrength = 50;
+  shldStrength = 500;
+  shldMaxStrength = 500;
   shldRecharge = .002;   // 2 points per second I think
   
   weaponHeat[0] = 0;

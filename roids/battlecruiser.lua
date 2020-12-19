@@ -77,6 +77,7 @@ engines = {
   }
 }
 
+
 function draw(timestamp)
 
   --front head SKUG
@@ -126,6 +127,7 @@ function draw(timestamp)
     glVertex2i(0,18)
     glVertex2i(0,-18)
   glEnd()
+
   -- white body front SKUG
   glColor3f(1,1,1)
   glBeginPolygon()
@@ -162,8 +164,8 @@ function draw(timestamp)
     glVertex2i(-96,-36)
   glEnd()
 
-   --middle motor
-   glColor3f(1,1,1)
+  --middle motor
+  glColor3f(1,1,1)
   glBeginPolygon()
     glVertex2i(-96,-4)
     glVertex2i(-96,4)
@@ -195,7 +197,6 @@ function draw(timestamp)
 end
 
 
-
 -- recursively dump a table
 -- from https://stackoverflow.com/questions/9168058/how-to-dump-a-table-to-console
 function dump(o)
@@ -212,16 +213,85 @@ function dump(o)
 end
 
 
+-- the squared distance between two objects
+function sqDistance(ob1, ob2)
+  return (ob1.x-ob2.x)^2 + (ob1.y-ob2.y)^2
+end
 
-function aiUpdate(world)
+
+--function getHeading(ob)
+--  local heading = math.atan( ob.dy / ob.dx )
+--  if ob.dx > 0 then heading += math.pi end
+--  return heading
+--end
+
+
+-- how rapidly (scaled to DT) the given object is getting closer (pos) or farther away (neg)
+function makeReport(ob1, ob2)
+
+  -- find the bearing of the object
+  local distX = ob1.x - ob2.x
+  local distY = ob1.y - ob2.y
+  local bearing = math.atan( distY / distX )
+  if distX > 0 then bearing = bearing + math.pi end
+
+  -- find the relative heading of the object
+  local movX = ob1.dx - ob2.dx
+  local movY = ob1.dy - ob2.dy
+  local heading = math.atan( movY / movX )
+  if movX > 0 then heading = heading + math.pi end
+
+  return {
+    sqDist = distX^2 + distY^2,
+    bearing = bearing,
+    sqMove = movX^2 + movY^2,
+    heading = heading
+  }
+end
+
+
+-- determine if an object with gravity is too close for comfort
+function dangerouslyCloseMassive(myself, massiveOb)
+  if massiveOb.g > 0 then
+    local dd = sqDistance(myself, massiveOb)
+    if dd <= 0 or massiveOb.g / dd > 0.00001 then
+      return true
+    end
+  end
+  return false
+end
+
+
+function avoid(myself, massiveOb)
+  print("Dangerously close to massive object.")
+  props = makeReport(myself, massiveOb)
+
   print(
     string.format(
-      "AI update in Lua ... myself (%0.02f,%0.02f) ... star (%0.02f,%0.02f).",
-      world.myself.x,
-      world.myself.y,
-      world.massiveObjects[1].x,
-      world.massiveObjects[1].y
+      "AI update in Lua ... myself (%0.02f,%0.02f) ... star (%0.02f,%0.02f,%d).",
+      myself.x,
+      myself.y,
+      massiveOb.x,
+      massiveOb.y,
+      massiveOb.g
     )
   )
-  findHot(1,2,6)
+
+  print(
+    string.format(
+      "... star relative heading (%0.02f) ... star bearing (%0.02f) ... star relative move (%0.02f).",
+      props.heading,
+      props.bearing,
+      props.sqMove
+    )
+  )
+end
+
+
+function aiUpdate(world)
+  if dangerouslyCloseMassive(world.myself, world.massiveObjects[1]) then
+    avoid(world.myself, world.massiveObjects[1])
+  else
+    findHot(1,2,6)
+  end
 end
