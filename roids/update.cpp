@@ -16,13 +16,13 @@ void initUpdate(){
   #endif
   
   lastMSec = SDL_GetTicks();
-  lastShipTransMSec = lastMSec;
+  lastShipTransMSec = 0;
   
   // alien creation timers
-  lastAF_MSec = lastMSec;
-  lastAR_MSec = lastMSec;
-  lastAW_MSec = lastMSec;
-  lastAL_MSec = lastMSec;
+  lastAF_MSec = 0;
+  lastAR_MSec = 0;
+  lastAW_MSec = 0;
+  lastAL_MSec = 0;
   
   // timestamp is incremented once per loop
   _timestamp = 1;
@@ -293,23 +293,23 @@ void update(int iterations){
   // *********************************************************************
   // create aliens
   
-  if(lastAF_MSec - SDL_GetTicks() > 3000){
-    lastAF_MSec += 3000;
+  /*if(lastAF_MSec == 0 || (lastMSec - lastAF_MSec > 5000)){
+    lastAF_MSec = lastMSec;
     createAlienFighters();
   }
   
-  if(lastAR_MSec - SDL_GetTicks() > 160000){
-    lastAR_MSec += 160000;
+  if(lastAR_MSec == 0 || (lastMSec - lastAR_MSec > 160000)){
+    lastAR_MSec = lastMSec;
     createAlienRambos();
-  }
+  }*/
   
-  if(lastAW_MSec - SDL_GetTicks() > 20000){
-    lastAW_MSec += 20000;
+  if(lastAW_MSec == 0 || (lastMSec - lastAW_MSec > 3000)){
+    lastAW_MSec = lastMSec;
     createAlienWanderers();
   }
   
-  if(lastAL_MSec - SDL_GetTicks() > 10000){
-    lastAL_MSec += 10000;
+  if(lastAL_MSec == 0 || (lastMSec - lastAL_MSec > 60000)){
+    lastAL_MSec = lastMSec;
     createAlienLuas();
   }
   

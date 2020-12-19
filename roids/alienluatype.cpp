@@ -123,6 +123,10 @@ alienluatype::alienluatype(double X, double Y, const char *filename){
   }
 
   init();
+
+  #ifdef DEBUG_OBJECTTYPE
+  fprintf(stdout,"In alienluatype::alienluatype for ID %d.\n",idNum);
+  #endif
 }
 
 
@@ -528,8 +532,10 @@ void alienluatype::aifollow(objecttype *target, double deadAngle, double engineA
 
 
 void alienluatype::aiupdate(){
+  fprintf(stdout,"Do aiupdate() at %d.\n",SDL_GetTicks());
+
   // setting our direction (to be moved to Lua)
-  if( _playerShip ) aifollow(_playerShip, 30, 20);
+  //if( _playerShip ) aifollow(_playerShip, 30, 20);
 
   // call out to Lua to manage the AI choices
   lua_getglobal(L, "aiUpdate");
@@ -545,7 +551,7 @@ void alienluatype::aiupdate(){
     asLuaTable(L);
 
     // add extra properties to self-table
-    lua_pushnumber(L, angle / (2 * M_PI));
+    lua_pushnumber(L, M_PI * angle / 180);
     lua_setfield(L, -2, "angle");
 
     // attach table about self
@@ -577,14 +583,18 @@ int alienluatype::findHot(lua_State *L){
   float r = luaL_checknumber(L, 1);
   float g = luaL_checknumber(L, 2);   // or luaL_tonumber() ?
   float b = luaL_checknumber(L, 3);
-  fprintf(stderr,"Got (%f) (%f) (%f).\n",r,g,b);
+  fprintf(stdout,"Got (%f) (%f) (%f).\n",r,g,b);
   return 1;
 }
 
 
 
 int alienluatype::setEngine(lua_State *L){
+  #ifdef DEBUG_OBJECTTYPE
+  fprintf(stdout,"In alienluatype::setEngine for ID %d.\n",idNum);
+  #endif
   engineOn = lua_toboolean(L, 1);
+  fprintf(stdout,"engineOn %d\n",engineOn);
   return 1;
 }
 
@@ -592,6 +602,7 @@ int alienluatype::setEngine(lua_State *L){
 
 int alienluatype::setTurnLeft(lua_State *L){
   turningLeft = lua_toboolean(L, 1);
+  fprintf(stdout,"turningLeft %d\n",turningLeft);
   return 1;
 }
 
@@ -599,5 +610,6 @@ int alienluatype::setTurnLeft(lua_State *L){
 
 int alienluatype::setTurnRight(lua_State *L){
   turningRight = lua_toboolean(L, 1);
+  fprintf(stdout,"turningRight %d\n",turningRight);
   return 1;
 }
