@@ -315,12 +315,12 @@ void alienluatype::init(){
 
 
 
+#ifdef DEBUG_ALIEN_FIGHTER
 void drawAiLabel(const char *txt, int tx, int ty, bool var){
-  //char buf[16];
   if(var) glColor4f(0.2,1.0,0.2,0.85); else glColor4f(0.9,0.1,0.0,0.85);
-  //snprintf(buf,16,txt);
   printStringToLeft(FONT_SMALL,false,txt,tx,ty);
 }
+#endif
 
 
 
