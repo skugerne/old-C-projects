@@ -110,6 +110,10 @@ alienluatype::alienluatype(double X, double Y, const char *filename){
   lua_register(L, "setEngine", &dispatch<&alienluatype::setEngine>);
   lua_register(L, "setTurnLeft", &dispatch<&alienluatype::setTurnLeft>);
   lua_register(L, "setTurnRight", &dispatch<&alienluatype::setTurnRight>);
+  lua_register(L, "setWeapon", &dispatch<&alienluatype::setWeapon>);
+  lua_register(L, "setAiFlee", &dispatch<&alienluatype::setAiFlee>);
+  lua_register(L, "setAiAttack", &dispatch<&alienluatype::setAiAttack>);
+  lua_register(L, "setAiSearch", &dispatch<&alienluatype::setAiSearch>);
 
   // load the script
   if (luaL_loadfile(L, filename) == LUA_OK) {
@@ -311,6 +315,15 @@ void alienluatype::init(){
 
 
 
+void drawAiLabel(const char *txt, int tx, int ty, bool var){
+  //char buf[16];
+  if(var) glColor4f(0.2,1.0,0.2,0.85); else glColor4f(0.9,0.1,0.0,0.85);
+  //snprintf(buf,16,txt);
+  printStringToLeft(FONT_SMALL,false,txt,tx,ty);
+}
+
+
+
 void alienluatype::draw(){
   glPushMatrix();
  
@@ -339,27 +352,21 @@ void alienluatype::draw(){
     drawRadius(true);
     drawLabel(false,.8,0,0);
   }
- 
+
   glPopMatrix();
- 
+
   #ifdef DEBUG_ALIEN_FIGHTER
-  char buf[20];
+  int tx = xShift-5-radius;
+  int ty = yShift+60;
   glEnable(GL_BLEND);
-  glColor4f(1,.5,0,.85);
-  
-  if(engineOn){
-    sprintf(buf,"Engine");
-    printStringToLeft(FONT_SMALL,false,&buf[0],xShift-20,yShift-30);
-  }
-  if(turningLeft){
-    sprintf(buf,"Left");
-    printStringToLeft(FONT_SMALL,false,&buf[0],xShift-20,yShift+10);
-  }
-  if(turningRight){
-    sprintf(buf,"Right");
-    printStringToLeft(FONT_SMALL,false,&buf[0],xShift-20,yShift-10);
-  }
-  
+
+  drawAiLabel("Engine", tx, ty-=20, engineOn);
+  drawAiLabel("Left", tx, ty-=20, turningLeft);
+  drawAiLabel("Right", tx, ty-=20, turningRight);
+  drawAiLabel("Flee", tx, ty-=20, aiFlee);
+  drawAiLabel("Attack", tx, ty-=20, aiAttack);
+  drawAiLabel("Search", tx, ty-=20, aiSearch);
+
   glDisable(GL_BLEND);
   #endif
 }
@@ -595,7 +602,6 @@ int alienluatype::setEngine(lua_State *L){
   fprintf(stderr,"In alienluatype::setEngine for idNum %u.\n",idNum);
   #endif
   engineOn = lua_toboolean(L, 1);
-  fprintf(stdout,"engineOn %d\n",engineOn);
   return 1;
 }
 
@@ -603,7 +609,6 @@ int alienluatype::setEngine(lua_State *L){
 
 int alienluatype::setTurnLeft(lua_State *L){
   turningLeft = lua_toboolean(L, 1);
-  fprintf(stdout,"turningLeft %d\n",turningLeft);
   return 1;
 }
 
@@ -611,6 +616,41 @@ int alienluatype::setTurnLeft(lua_State *L){
 
 int alienluatype::setTurnRight(lua_State *L){
   turningRight = lua_toboolean(L, 1);
-  fprintf(stdout,"turningRight %d\n",turningRight);
+  return 1;
+}
+
+
+
+int alienluatype::setWeapon(lua_State *L){
+  bool state = lua_toboolean(L, 1);
+  Uint32 weapon = luaL_checknumber(L, 2);   // or luaL_tonumber() ?
+  fprintf(stdout,"setWeapon %d %d\n",state,weapon);
+  return 1;
+}
+
+
+
+int alienluatype::setAiFlee(lua_State *L){
+  #ifdef DEBUG_ALIEN_FIGHTER
+  aiFlee = lua_toboolean(L, 1);
+  #endif
+  return 1;
+}
+
+
+
+int alienluatype::setAiAttack(lua_State *L){
+  #ifdef DEBUG_ALIEN_FIGHTER
+  aiAttack = lua_toboolean(L, 1);
+  #endif
+  return 1;
+}
+
+
+
+int alienluatype::setAiSearch(lua_State *L){
+  #ifdef DEBUG_ALIEN_FIGHTER
+  aiSearch = lua_toboolean(L, 1);
+  #endif
   return 1;
 }

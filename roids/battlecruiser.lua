@@ -348,8 +348,12 @@ end
 
 function aiUpdate(world)
   if dangerouslyCloseMassive(world.myself, world.massiveObjects[1]) then
+    setAiFlee(true)
+    setAiAttack(false)
+    setAiSearch(false)
     avoid(world.myself, world.massiveObjects[1])
   else
+    setAiFlee(false)
     findHot(1,2,6)
   end
 end

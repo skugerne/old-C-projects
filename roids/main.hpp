@@ -27,13 +27,13 @@
 //#define DEBUG
 //#define DEBUG_UPDATE
 //#define DEBUG_DRAW
-#define DEBUG_NET
+//#define DEBUG_NET
 //#define DEBUG_NET_TRAFF
 //#define DEBUG_THRUST
 //#define DEBUG_OBJECTTYPE
 //#define DEBUG_OBJ_LISTS
 //#define DEBUG_SHIPTYPE
-//#define DEBUG_ALIEN_FIGHTER
+#define DEBUG_ALIEN_FIGHTER
 #define DEBUG_ALIEN_RAMBO
 //#define DEBUG_ALIEN_WANDER
 //#define DEBUG_COLLISIONS
@@ -67,7 +67,7 @@ typedef void *(*pthread_func_t)(void*);
 #define MAX_SHIP_POWERSYS 5
 
 #define DT 0.001                    // 1000 updates per second
-#define AI_UPDATE_DIVISOR 10        // 100 control samples per second for AI or player
+#define AI_UPDATE_DIVISOR 250        // 100 control samples per second for AI or player
 
 #define NUM_SECTORS_PER_SIDE     256   // note: changing this breaks radar
 #define SECTOR_SIZE              512
@@ -369,9 +369,9 @@ bool keyToMenu(int);
 // in textureFont.cpp
 void setOverlayMode();
 void setNormalMode();
-void printStringToLeft(fonttype,bool,char*,double,double);
-void printStringToRight(fonttype,bool,char*,double,double);
-void printStringCentered(fonttype,bool,char*,double,double);
+void printStringToLeft(fonttype,bool,const char*,double,double);
+void printStringToRight(fonttype,bool,const char*,double,double);
+void printStringCentered(fonttype,bool,const char*,double,double);
 void printCharToRight(fonttype,bool,char,double,double);
 double stringXOverlay(fonttype,int);
 double stringX(fonttype,char*);

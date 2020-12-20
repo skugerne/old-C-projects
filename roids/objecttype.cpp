@@ -297,6 +297,7 @@ void objecttype::basicInit(){
   #ifdef DEBUG_OBJECTTYPE
   idNum = lastID;
   ++lastID;
+  fprintf(stderr,"Assign idNum %u.\n",idNum);
   #endif
   
   #ifdef DEBUG_THRUST

@@ -56,10 +56,20 @@ class alienluatype : public alientype {
     int setEngine(lua_State *);
     int setTurnLeft(lua_State *);
     int setTurnRight(lua_State *);
-    
+    int setWeapon(lua_State *);
+    int setAiFlee(lua_State *);
+    int setAiAttack(lua_State *);
+    int setAiSearch(lua_State *);
+
+    #ifdef DEBUG_ALIEN_FIGHTER
+    bool aiFlee;                    // display AI intent to run away
+    bool aiAttack;                  // display AI intent to attack
+    bool aiSearch;                  // display AI intent to search
+    #endif
+
     Uint numWeapons;
     weapontype *weapons;
-    
+
     Uint numEngines;
     enginetype *engines;
 

@@ -71,7 +71,7 @@ void setNormalMode(){
 
 
 // string output ... string:  **NULL terminated**
-void printString(fonttype font, char *chars, int len, bool italic){
+void printString(fonttype font, const char *chars, int len, bool italic){
   glListBase(-31 + ( 128 * italic ));
   glBindTexture(GL_TEXTURE_2D, _texture[0]);
   
@@ -82,7 +82,7 @@ void printString(fonttype font, char *chars, int len, bool italic){
 
 // string output ... string:  **NULL terminated**
 // negativeOffset is in terms of the overlay coordinate system
-void printStringWithOffset(fonttype font, bool italic, char *chars, 
+void printStringWithOffset(fonttype font, bool italic, const char *chars, 
   double x, double y, double negativeOffset
 ){
   // flag for properly undoing what things we do to get set up
@@ -118,21 +118,21 @@ void printStringWithOffset(fonttype font, bool italic, char *chars,
 
 
 
-void printStringToLeft(fonttype font, bool italic, char *chars, double x, double y){
+void printStringToLeft(fonttype font, bool italic, const char *chars, double x, double y){
   printStringWithOffset(font,italic,chars,x,y,stringXOverlay(font,strlen(chars))+10);
 }
 
 
 
 // string output ... string:  **NULL terminated**
-void printStringToRight(fonttype font, bool italic, char *chars, double x, double y){
+void printStringToRight(fonttype font, bool italic, const char *chars, double x, double y){
   printStringWithOffset(font,italic,chars,x,y,0.0);
 }
 
 
 
 // string output ... string:  **NULL terminated**
-void printStringCentered(fonttype font, bool italic, char *chars, double x, double y){
+void printStringCentered(fonttype font, bool italic, const char *chars, double x, double y){
   printStringWithOffset(font,italic,chars,x,y,stringXOverlay(font,strlen(chars))/2+5);
 }
 
