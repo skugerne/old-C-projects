@@ -434,7 +434,7 @@ objecttype* alienluatype::specialUpdate(){
   }
   angle = angleLimit(angle);
 
-  if( _timestamp % AI_UPDATE_DIVISOR == 0 )
+  if( _timestamp % AI_UPDATE_DIVISOR == 0 )    // AI update on some physics updates
     aiupdate();
 
   objecttype *oPtr = next;
@@ -458,8 +458,8 @@ objecttype* alienluatype::specialUpdate(){
   return oPtr;
 }
 
- 
- 
+
+
 void alienluatype::collisionEffect(double damage, objectcollisiontype what){
   shieldPoints -= damage;
   
@@ -550,7 +550,10 @@ void alienluatype::aiupdate(){
   if (lua_isfunction(L, -1)) {
     // we need to send in a nested table
 
-    lua_createtable(L, 0, 3);               // NOTE: should match number of items
+    lua_createtable(L, 0, 4);               // NOTE: should match number of items
+
+    lua_pushnumber(L, _timestamp);
+    lua_setfield(L, -2, "timestamp");       // maybe the AI wants to know what the time is
 
     lua_pushnumber(L, MAX_COORDINATE);
     lua_setfield(L, -2, "maxCoordinate");   // the AI needs to know how big the map is
@@ -599,7 +602,7 @@ int alienluatype::findHot(lua_State *L){
 
 int alienluatype::setEngine(lua_State *L){
   #ifdef DEBUG_OBJECTTYPE
-  fprintf(stderr,"In alienluatype::setEngine for idNum %u.\n",idNum);
+  fprintf(stderr,"In alienluatype::setEngine for idNum %u.\n",idNum);  // check message is delivered to right object
   #endif
   engineOn = lua_toboolean(L, 1);
   return 1;
@@ -625,6 +628,7 @@ int alienluatype::setWeapon(lua_State *L){
   bool state = lua_toboolean(L, 1);
   Uint32 weapon = luaL_checknumber(L, 2);   // or luaL_tonumber() ?
   fprintf(stdout,"setWeapon %d %d\n",state,weapon);
+  weapons[weapon].on = state;
   return 1;
 }
 

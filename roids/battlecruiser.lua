@@ -230,33 +230,29 @@ function sqDistance(ob1, ob2)
 end
 
 
-function getRelativeHeading(ob)
-  local relativeHeading = math.atan( ob.dy / ob.dx )
-  if ob.dx > 0 then relativeHeading = relativeHeading + math.pi end
-  return boundAngle(relativeHeading)
-end
-
-
 -- how rapidly (scaled to DT) the given object is getting closer (pos) or farther away (neg)
 function makeReport(ob1, ob2)
 
   -- find the bearing of the object
-  local distX = ob1.x - ob2.x
-  local distY = ob1.y - ob2.y
-  local bearing = math.atan( distY / distX )
-  if distX > 0 then bearing = bearing + math.pi end
+  -- should be bound between -PI and +PI
+  -- if ob1 has lower X & Y than ob2, bearing is between 0 and 90 deg
+  local distX = ob2.x - ob1.x
+  local distY = ob2.y - ob1.y
+  local bearing = math.atan(distY, distX)
 
   -- find the relative heading of the object
+  -- should be bound between -PI and +PI
+  -- if ob1 has lower X & Y than ob2 but is gaining in both, relative heading is between -90 and -180 deg
+  -- if bearing and heading are pointed directly opposite, the objects are moving towards each other
   local movX = ob1.dx - ob2.dx
   local movY = ob1.dy - ob2.dy
-  local relativeHeading = math.atan( movY / movX )
-  if movX > 0 then relativeHeading = relativeHeading + math.pi end
+  local relativeHeading = math.atan(movY, movX)
 
   return {
     sqDist = distX^2 + distY^2,
-    bearing = boundAngle(bearing),
+    bearing = bearing,
     sqMove = movX^2 + movY^2,
-    relativeHeading = boundAngle(relativeHeading)
+    relativeHeading = relativeHeading
   }
 end
 
@@ -265,7 +261,7 @@ end
 function dangerouslyCloseMassive(myself, massiveOb)
   if massiveOb.g > 0 then
     local dd = sqDistance(myself, massiveOb)
-    if dd <= 0 or massiveOb.g / dd > 0.0000001 then
+    if dd <= 0 or massiveOb.g / dd > 0.000001 then
       return true
     end
   end
@@ -292,53 +288,46 @@ function avoid(myself, massiveOb)
 
   print(
     string.format(
-      "... facing (%0.02f) ... star relative heading (%0.02f) ... star bearing (%0.02f) ... star relative move sq (%0.02f).",
+      "... facing (%0.02f) ... star relative heading (%0.02f) ... star bearing (%0.02f).",
       myself.angle,
       props.relativeHeading,
-      props.bearing,
-      props.sqMove
+      props.bearing
     )
   )
 
-  local angDiff = boundAngle(props.bearing - props.relativeHeading)
-
-  local absAngDiff = math.abs(angDiff)
-  if absAngDiff > math.pi * 0.35 then
-    print(
-      string.format(
-        "... safe to engage engines because angle between star bearing and relative heading is (%0.02f).",
-        angDiff
-      )
+  local absAngDiff = math.abs(boundAngle(props.bearing - props.relativeHeading))
+  local targetAngleDiff = boundAngle(boundAngle(props.bearing - math.pi) - myself.angle)
+  local absTargetAngleDiff = math.abs(targetAngleDiff)
+  print(
+    string.format(
+      "... difference between bearing and relative heading of star is (abs val) (%0.02f).",
+      absAngDiff
     )
+  )
+  print(
+    string.format(
+      "... difference between current facing and ideal facing is (abs val) (%0.02f).",
+      absTargetAngleDiff
+    )
+  )
+
+  if (absTargetAngleDiff < math.pi * 0.65) or (absAngDiff > math.pi * 0.25) then
     setEngine(true)
   else
     setEngine(false)
   end
 
-  if absAngDiff > math.pi * 0.8 then
-    print(
-      string.format(
-        "... safe to stop turning because angle between star bearing and relative heading is (%0.02f).",
-        angDiff
-      )
-    )
+  if (absTargetAngleDiff < math.pi * 0.20) or (absAngDiff > math.pi * 0.75) then
+    print("No turning.")
     setTurnLeft(false)
     setTurnRight(false)
   else
-    local targetAngle = boundAngle(props.bearing - math.pi)
-    local targetAngleDiff = boundAngle(targetAngle - myself.angle)
-    print(
-      string.format(
-        "... need to turn to target angle (%0.02f) from current angle (%0.02f) diff (%0.02f).",
-        targetAngle,
-        myself.angle,
-        targetAngleDiff
-      )
-    )
-    if targetAngleDiff > 0 then
+    if targetAngleDiff < 0 then
+      print("Turn right.")
       setTurnLeft(false)
       setTurnRight(true)
     else
+      print("Turn left.")
       setTurnLeft(true)
       setTurnRight(false)
     end
@@ -347,6 +336,7 @@ end
 
 
 function aiUpdate(world)
+  print(string.format("Time is %d.",world.timestamp))
   if dangerouslyCloseMassive(world.myself, world.massiveObjects[1]) then
     setAiFlee(true)
     setAiAttack(false)
@@ -354,6 +344,9 @@ function aiUpdate(world)
     avoid(world.myself, world.massiveObjects[1])
   else
     setAiFlee(false)
+    setAiAttack(true)
+    setAiSearch(true)
+    setEngine(false)
     findHot(1,2,6)
   end
 end
