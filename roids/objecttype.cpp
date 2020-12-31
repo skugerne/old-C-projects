@@ -38,9 +38,12 @@ objecttype* objecttype::update(){
     
     // wall bounce
     collideWithEdges();
-    
-    visibilityFactor = 
-      _sectors[xSectorIndex][ySectorIndex].brightness * baseVisibility / radius;
+
+    // a system by which things can be visible based on light
+    // so visibility is based on radius, distance from the start, and some visibility property
+    // conceptually a white object might have a higher baseVisibility, and "stealth" could have a low one
+    // of course this fails to take into account light vs dark side
+    visibilityFactor = _sectors[xSectorIndex][ySectorIndex].brightness * baseVisibility / radius;
   }
   
   // some things aren't safe if we are somehow out of bounds
@@ -64,8 +67,11 @@ objecttype* objecttype::sectorUpdate(){
     // checks for collisions, calls fcn to actually put this in _sector[][]
     placeInSector();
     
-    // use of sector/2 is not flexable if radar or map size changes
-    addToRadar(&_radar[xSectorIndex/2][ySectorIndex/2][_radarNew]);
+    // make it possible to players/AIs to notice the object with sensors and scanners
+    if( _timestamp % AI_UPDATE_DIVISOR == 0 ){    // AI update on some physics updates
+      _radar[xSectorIndex][ySectorIndex][_radarNew].visibility += visibilityFactor;
+      _radar[xSectorIndex][ySectorIndex][_radarNew].visibility += detectabilityFactor;
+    }
     
     if( isDead ){
       // woops, we got killed this update
@@ -339,21 +345,6 @@ void objecttype::addToSector(sectortype *sPtr){
         }
       }
     }
-  }
-}
-
-
-
-void objecttype::addToRadar(radartype *rPtr){
-  // if timestamps don't match, overwrite
-  if(rPtr->timestamp != _timestamp){
-    rPtr->timestamp = _timestamp;
-    
-    rPtr->visibility = visibilityFactor;
-    rPtr->detectability = detectabilityFactor;
-  }else{
-    rPtr->visibility += visibilityFactor;
-    rPtr->detectability += detectabilityFactor;
   }
 }
 

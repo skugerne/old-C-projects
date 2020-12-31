@@ -95,7 +95,6 @@ class objecttype {
     
     // sector list and radar management
     void addToSector(sectortype*);
-    void addToRadar(radartype*);
     
     void drawRadius(bool);                      // a debugging tool
     void drawLabel(bool,double,double,double);  // a debugging tool

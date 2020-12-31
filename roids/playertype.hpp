@@ -1,6 +1,10 @@
 #ifndef PLAYERTYPE_HH
 #define PLAYERTYPE_HH
 
+#define RADAR_SIZE 128      // 128x128 for scanner and for sensor
+#define RADAR_DATA_DIVISOR (NUM_SECTORS_PER_SIDE/RADAR_SIZE)    // assumes & requires an integer result here
+#define RADAR_BRIGHT_SCALE 50
+
 
 
 // this class is just a wrapper for the player, providing key-binding ...

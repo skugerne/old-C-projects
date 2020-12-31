@@ -80,14 +80,10 @@ void initUpdate(){
   _radarNew = true;
   
   // clear the radar
-  for(int i=0;i<RADAR_SIZE;++i){
-    for(int j=0;j<RADAR_SIZE;++j){
-      _radar[i][j][_radarNew].timestamp = 0;
-      _radar[i][j][!_radarNew].timestamp = 0;
-      
+  for(int i=0;i<NUM_SECTORS_PER_SIDE;++i){
+    for(int j=0;j<NUM_SECTORS_PER_SIDE;++j){
       _radar[i][j][_radarNew].visibility = 0;
       _radar[i][j][!_radarNew].visibility = 0;
-      
       _radar[i][j][_radarNew].detectability = 0;
       _radar[i][j][!_radarNew].detectability = 0;
     }
@@ -273,7 +269,16 @@ void updateObjects(int iterations){
     
     ++_timestamp;
     ++_updates;
-    _radarNew = !_radarNew;   // radar "buffer" flip
+
+    if( _timestamp % AI_UPDATE_DIVISOR == 0 ){    // AI update on some physics updates
+      _radarNew = !_radarNew;                     // radar "buffer" flip
+      for(int i=0;i<NUM_SECTORS_PER_SIDE;++i){    // clear the radar
+        for(int j=0;j<NUM_SECTORS_PER_SIDE;++j){
+          _radar[i][j][_radarNew].visibility = 0;
+          _radar[i][j][_radarNew].detectability = 0;
+        }
+      }
+    }
     
     #ifdef DEBUG_OBJECTTYPE
     fprintf(stderr,"Finished object updates.\n");

@@ -67,9 +67,9 @@ typedef void *(*pthread_func_t)(void*);
 #define MAX_SHIP_POWERSYS 5
 
 #define DT 0.001                    // 1000 updates per second
-#define AI_UPDATE_DIVISOR 250        // 100 control samples per second for AI or player
+#define AI_UPDATE_DIVISOR 10        // 100 control samples per second for AI or player
 
-#define NUM_SECTORS_PER_SIDE     256   // note: changing this breaks radar
+#define NUM_SECTORS_PER_SIDE     256   // note: sensor & scanner use this dimension as well
 #define SECTOR_SIZE              512
 
 #define MAX_COORDINATE           NUM_SECTORS_PER_SIDE*SECTOR_SIZE
@@ -85,7 +85,6 @@ typedef void *(*pthread_func_t)(void*);
 
 #define NET_BUFFER_SIZE 20   // if this is too small data may be lost
 #define NUM_KEYS 8
-#define RADAR_SIZE 128    // note: tied to NUM_SECTORS_PER_SIDE
 
 #define NUM_TEXTURES 21    // this will include the font texture (listed first)
 
@@ -193,13 +192,11 @@ class startype;
 // struct definitions
 
 
-/**/
-// rather than set all _sector elements to NULL all the time ...
-// ... we just use the timestamp to know when elements are out of date
+
 struct sectortype {
   objecttype *first;
-  Uint timestamp;
-  
+  Uint timestamp;      // timestamp indicates if contents are fresh, or can be ignored
+
   // the gravity map ... pps accel
   float xAccel, yAccel, brightness;
   bool nearCenter;
@@ -209,9 +206,9 @@ struct sectortype {
 
 struct radartype {
   Uint timestamp;
-  
+
   // totals for things in this sector
-  double visibility, detectability;
+  float visibility, detectability;
 };
 
 
@@ -276,7 +273,7 @@ extern shiptype *_playerShip, *_otherPlayerShip;
 extern playertype *_player;
 extern int _level;
 extern Uint _curPlayers;
-extern radartype _radar[RADAR_SIZE][RADAR_SIZE][2];
+extern radartype _radar[NUM_SECTORS_PER_SIDE][NUM_SECTORS_PER_SIDE][2];
 extern bool _radarNew;
 
 // inputs

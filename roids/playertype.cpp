@@ -671,7 +671,7 @@ void playertype::drawRingStar(){
   
   float fade = (.35 - scale) / .1;
   if(fade > 1) fade = 1;
-  glColor4f(1,1,0,.25*fade);
+  glColor4f(1.0,1.0,0.0,0.25*fade);
   
   glBegin(GL_TRIANGLE_FAN);
     glVertex2f(0,0);
@@ -723,67 +723,28 @@ void playertype::drawRingStar(){
 
 
 
-void playertype::drawSensor(){
-  
-  // *********************************************************************
-  // visibility, on left
-  
-  // the use of "2" is somewhat bad practice (not flexable)
-  int shipX = (int)*_x / SECTOR_SIZE / 2;
-  int shipY = (int)*_y / SECTOR_SIZE / 2;
-  
-  glPushMatrix();
-  glTranslatef(_virtualPosX-15-128,-_virtualPosY+15,0);
-  
-  glColor3f(0,0,0);
-  glBegin(GL_QUADS);
-    glVertex2f(0,0);
-    glVertex2f(128,0);
-    glVertex2f(128,128);
-    glVertex2f(0,128);
-  glEnd();
- 
-  glBegin(GL_POINTS);
-  
-  for(int i=0;i<RADAR_SIZE;++i){
-    int distX = i - shipX;
-    int distY;
-    distX *= distX;
-    for(int j=0;j<RADAR_SIZE;++j){
-      if(_radar[i][j][!_radarNew].timestamp == _timestamp-1){
-        // _timestamp - 1 cause _timestamp is incremented right after each update
-        
-        distY = j - shipY;
-        distY *= distY;
-        
-        float color = 10*_radar[i][j][!_radarNew].visibility / (float)(distX + distY);
-        if(color > .1){
-          glColor3f(color,color,color);
-          glVertex2i(i,j);
-        }
-      }
-    }
-  }
-  
-  glEnd();
-  
+void standardRadarBits(float shipX, float shipY){
   glEnable(GL_BLEND);
-  
-  glColor4f( 0.3, 1.0, 0.3,  1.0);
+
+  // the ship
+  shipX /= (NUM_SECTORS_PER_SIDE / RADAR_SIZE);
+  shipY /= (NUM_SECTORS_PER_SIDE / RADAR_SIZE);
+  glColor4f(0.3, 1.0, 0.3, 1.0);
   glBegin(GL_TRIANGLE_FAN);
   glVertex2i(shipX,shipY);
-  glColor4f( 0.3, 1.0, 0.3,  0.0);
+  glColor4f(0.3, 1.0, 0.3, 0.0);
   glVertex2i(shipX+2,shipY+2);
   glVertex2i(shipX-2,shipY+2);
   glVertex2i(shipX-2,shipY-2);
   glVertex2i(shipX+2,shipY-2);
   glVertex2i(shipX+2,shipY+2);
   glEnd();
-  
-  glColor4f( 1.0, 1.0, 0.3,  1.0);
+
+  // FIXME: the star is hard-coded
+  glColor4f(1.0, 1.0, 0.3, 1.0);
   glBegin(GL_TRIANGLE_FAN);
   glVertex2i(RADAR_SIZE/2,RADAR_SIZE/2);
-  glColor4f( 1.0, 1.0, 0.3,  0.0);
+  glColor4f(1.0, 1.0, 0.3, 0.0);
   glVertex2i(RADAR_SIZE/2+3,RADAR_SIZE/2+5);
   glVertex2i(RADAR_SIZE/2-3,RADAR_SIZE/2+5);
   glVertex2i(RADAR_SIZE/2-5,RADAR_SIZE/2);
@@ -792,17 +753,72 @@ void playertype::drawSensor(){
   glVertex2i(RADAR_SIZE/2+5,RADAR_SIZE/2);
   glVertex2i(RADAR_SIZE/2+3,RADAR_SIZE/2+5);
   glEnd();
-  
+
   glDisable(GL_BLEND);
-  
-  glColor3f(.8,.8,0);
+
+  // outer edge
+  glColor3f(0.8,0.8,0.0);
   glBegin(GL_LINE_LOOP);
     glVertex2f(0,0);
-    glVertex2f(128,0);
-    glVertex2f(128,128);
-    glVertex2f(0,128);
+    glVertex2f(RADAR_SIZE,0);
+    glVertex2f(RADAR_SIZE,RADAR_SIZE);
+    glVertex2f(0,RADAR_SIZE);
   glEnd();
+}
+
+
+
+void playertype::drawSensor(){
   
+  // *********************************************************************
+  // visibility (sensor), on left
+  
+  int shipX = (int)*_x / SECTOR_SIZE;
+  int shipY = (int)*_y / SECTOR_SIZE;
+  
+  glPushMatrix();
+  glTranslatef(_virtualPosX-15-RADAR_SIZE,-_virtualPosY+15,0);
+  
+  glColor3f(0,0,0);
+  glBegin(GL_QUADS);
+    glVertex2f(0,0);
+    glVertex2f(RADAR_SIZE,0);
+    glVertex2f(RADAR_SIZE,RADAR_SIZE);
+    glVertex2f(0,RADAR_SIZE);
+  glEnd();
+
+  glBegin(GL_POINTS);
+
+  // dots for all the objects you can see
+  for(int i=0;i<RADAR_SIZE;++i){
+    for(int j=0;j<RADAR_SIZE;++j){
+      float visibility = 0.0;
+      for(int i2=i*RADAR_DATA_DIVISOR;i2<i*RADAR_DATA_DIVISOR+RADAR_DATA_DIVISOR;++i2){
+        // we'll need to translate from radar display size to radar data size
+        // NOTE: assumption is that radar data size is the same as or larger than display size, and integer scalable
+        int distX = i2 - shipX;
+        distX *= distX;
+        for(int j2=j*RADAR_DATA_DIVISOR;j2<j*RADAR_DATA_DIVISOR+RADAR_DATA_DIVISOR;++j2){
+          if(_radar[i2][j2][!_radarNew].visibility > 0){
+            int distY = j2 - shipY;
+            distY *= distY;
+            visibility += _radar[i2][j2][!_radarNew].visibility / (float)(distX + distY);
+          }
+        }
+      }
+
+      if(visibility > 0.01/RADAR_BRIGHT_SCALE){
+        float color = RADAR_BRIGHT_SCALE * visibility;
+        glColor3f(color,color,color);
+        glVertex2i(i,j);
+      }
+    }
+  }
+
+  glEnd();
+
+  standardRadarBits(shipX,shipY);
+
   glPopMatrix();
 }
 
@@ -811,95 +827,68 @@ void playertype::drawSensor(){
 void playertype::drawScanner(){
   
   // *********************************************************************
-  // detectability, on left
-  
-  // the use of "2" is somewhat bad practice (not flexable)
-  int shipX = (int)*_x / SECTOR_SIZE / 2;
-  int shipY = (int)*_y / SECTOR_SIZE / 2;
-  
+  // detectability (scanner), on right
+
+  int shipX = (int)*_x / SECTOR_SIZE;
+  int shipY = (int)*_y / SECTOR_SIZE;
+
   glPushMatrix();
   glTranslatef(-_virtualPosX+15,-_virtualPosY+15,0);
-  
+
   glColor3f(0,0,0);
   glBegin(GL_QUADS);
     glVertex2f(0,0);
-    glVertex2f(128,0);
-    glVertex2f(128,128);
-    glVertex2f(0,128);
+    glVertex2f(RADAR_SIZE,0);
+    glVertex2f(RADAR_SIZE,RADAR_SIZE);
+    glVertex2f(0,RADAR_SIZE);
   glEnd();
-  
+
   glBegin(GL_POINTS);
-  
+
+  // dots for all the objects you can see
   for(int i=0;i<RADAR_SIZE;++i){
-    int distX = i - shipX;
-    int distY;
-    distX *= distX;
     for(int j=0;j<RADAR_SIZE;++j){
-      if(_radar[i][j][!_radarNew].timestamp == _timestamp-1){
-        // _timestamp - 1 cause _timestamp is incremented right after each update
-        distY = j - shipY;
-        distY *= distY;
-        
-        float color = 10*_radar[i][j][!_radarNew].detectability / (float)(distX + distY);
-        if(color > .1){
-          glColor3f(color,color,color);
-          glVertex2i(i,j);
+      float detectability = 0.0;
+      for(int i2=i*RADAR_DATA_DIVISOR;i2<i*RADAR_DATA_DIVISOR+RADAR_DATA_DIVISOR;++i2){
+        // we'll need to translate from radar display size to radar data size
+        // NOTE: assumption is that radar data size is the same as or larger than display size, and integer scalable
+        int distX = i2 - shipX;
+        distX *= distX;
+        for(int j2=j*RADAR_DATA_DIVISOR;j2<j*RADAR_DATA_DIVISOR+RADAR_DATA_DIVISOR;++j2){
+          if(_radar[i2][j2][!_radarNew].detectability > 0){
+            int distY = j2 - shipY;
+            distY *= distY;
+            detectability += _radar[i2][j2][!_radarNew].detectability / (float)(distX + distY);
+          }
         }
+      }
+
+      if(detectability > 0.01/RADAR_BRIGHT_SCALE){
+        float color = RADAR_BRIGHT_SCALE * detectability;
+        glColor3f(color,color,color);
+        glVertex2i(i,j);
       }
     }
   }
-  
+
   glEnd();
-  
-  glEnable(GL_BLEND);
-  
-  glColor4f( 0.3, 1.0, 0.3,  1.0);
-  glBegin(GL_TRIANGLE_FAN);
-  glVertex2i(shipX,shipY);
-  glColor4f( 0.3, 1.0, 0.3,  0.0);
-  glVertex2i(shipX+2,shipY+2);
-  glVertex2i(shipX-2,shipY+2);
-  glVertex2i(shipX-2,shipY-2);
-  glVertex2i(shipX+2,shipY-2);
-  glVertex2i(shipX+2,shipY+2);
-  glEnd();
-  
-  glColor4f( 1.0, 1.0, 0.3,  1.0);
-  glBegin(GL_TRIANGLE_FAN);
-  glVertex2i(RADAR_SIZE/2,RADAR_SIZE/2);
-  glColor4f( 1.0, 1.0, 0.3,  0.0);
-  glVertex2i(RADAR_SIZE/2+3,RADAR_SIZE/2+5);
-  glVertex2i(RADAR_SIZE/2-3,RADAR_SIZE/2+5);
-  glVertex2i(RADAR_SIZE/2-5,RADAR_SIZE/2);
-  glVertex2i(RADAR_SIZE/2-3,RADAR_SIZE/2-5);
-  glVertex2i(RADAR_SIZE/2+3,RADAR_SIZE/2-5);
-  glVertex2i(RADAR_SIZE/2+5,RADAR_SIZE/2);
-  glVertex2i(RADAR_SIZE/2+3,RADAR_SIZE/2+5);
-  glEnd();
-  
-  glDisable(GL_BLEND);
-  
-  glColor3f(.8,.8,0);
-  glBegin(GL_LINE_LOOP);
-    glVertex2f(0,0);
-    glVertex2f(128,0);
-    glVertex2f(128,128);
-    glVertex2f(0,128);
-  glEnd();
-  
+
+  standardRadarBits(shipX,shipY);
+
   glPopMatrix();
   
   // *********************************************************************
-  // labels
+  // labels (for various things not just the scanner display)
+  // some other bits of text are done over in draw.cpp, so not related to the player
   
   char buf[10];
   
   glEnable(GL_BLEND);
-  glColor4f(.7,.7,0,.65);
+  glColor4f(0.7,0.7,0.0,0.65);
   
-  snprintf(buf,10,"Scanner");
+  snprintf(buf,10,"Sensor");   // visibility
   printStringToRight(FONT_SMALL,false,&buf[0],RADAR_SIZE/2 - _virtualPosX - 35 + 10,17 + RADAR_SIZE - _virtualPosY);
-  snprintf(buf,10,"Sensor");
+  snprintf(buf,10,"Scanner");  // detectability
   printStringToLeft(FONT_SMALL,false,&buf[0],-RADAR_SIZE/2 + _virtualPosX + 30 - 10,17 + RADAR_SIZE - _virtualPosY);
   snprintf(buf,10,"Shield");
   printStringToLeft(FONT_SMALL,false,&buf[0], _virtualPosX, -170);
@@ -910,7 +899,6 @@ void playertype::drawScanner(){
   snprintf(buf,10,"Heat");
   printStringToRight(FONT_SMALL,false,&buf[0], -_virtualPosX, -186);
   
-    
   glDisable(GL_BLEND);
 }
 

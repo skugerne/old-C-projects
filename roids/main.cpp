@@ -49,7 +49,7 @@ shiptype *_playerShip, *_otherPlayerShip;
 playertype *_player;
 int _level;
 Uint _curPlayers;
-radartype _radar[RADAR_SIZE][RADAR_SIZE][2];
+radartype _radar[NUM_SECTORS_PER_SIDE][NUM_SECTORS_PER_SIDE][2];
 bool _radarNew;
 
 // inputs

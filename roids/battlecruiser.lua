@@ -60,19 +60,19 @@ engines = {
   {
     firingMod = 6,
     firingPoint = 2,
-    x = -102,   -- position on the model
+    x = -105,   -- position on the model
     y = 24
   },
   {
     firingMod = 6,
     firingPoint = 4,
-    x = -102,
+    x = -105,
     y = -24
   },
   {
     firingMod = 6,
     firingPoint = 0,
-    x = -102,
+    x = -105,
     y = 0
   }
 }
