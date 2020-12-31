@@ -771,7 +771,7 @@ void standardRadarBits(float shipX, float shipY){
 void playertype::drawSensor(){
   
   // *********************************************************************
-  // visibility (sensor), on left
+  // visibility (sensor), on right
   
   int shipX = (int)*_x / SECTOR_SIZE;
   int shipY = (int)*_y / SECTOR_SIZE;
@@ -807,8 +807,8 @@ void playertype::drawSensor(){
         }
       }
 
-      if(visibility > 0.01/RADAR_BRIGHT_SCALE){
-        float color = RADAR_BRIGHT_SCALE * visibility;
+      if(visibility > 0.01/SENSOR_BRIGHT_SCALE){
+        float color = SENSOR_BRIGHT_SCALE * visibility;
         glColor3f(color,color,color);
         glVertex2i(i,j);
       }
@@ -827,7 +827,7 @@ void playertype::drawSensor(){
 void playertype::drawScanner(){
   
   // *********************************************************************
-  // detectability (scanner), on right
+  // detectability (scanner), on left
 
   int shipX = (int)*_x / SECTOR_SIZE;
   int shipY = (int)*_y / SECTOR_SIZE;
@@ -863,8 +863,8 @@ void playertype::drawScanner(){
         }
       }
 
-      if(detectability > 0.01/RADAR_BRIGHT_SCALE){
-        float color = RADAR_BRIGHT_SCALE * detectability;
+      if(detectability > 0.01/SCANNER_BRIGHT_SCALE){
+        float color = SCANNER_BRIGHT_SCALE * detectability;
         glColor3f(color,color,color);
         glVertex2i(i,j);
       }
@@ -880,24 +880,16 @@ void playertype::drawScanner(){
   // *********************************************************************
   // labels (for various things not just the scanner display)
   // some other bits of text are done over in draw.cpp, so not related to the player
-  
-  char buf[10];
-  
+
   glEnable(GL_BLEND);
   glColor4f(0.7,0.7,0.0,0.65);
-  
-  snprintf(buf,10,"Sensor");   // visibility
-  printStringToRight(FONT_SMALL,false,&buf[0],RADAR_SIZE/2 - _virtualPosX - 35 + 10,17 + RADAR_SIZE - _virtualPosY);
-  snprintf(buf,10,"Scanner");  // detectability
-  printStringToLeft(FONT_SMALL,false,&buf[0],-RADAR_SIZE/2 + _virtualPosX + 30 - 10,17 + RADAR_SIZE - _virtualPosY);
-  snprintf(buf,10,"Shield");
-  printStringToLeft(FONT_SMALL,false,&buf[0], _virtualPosX, -170);
-  snprintf(buf,10,"Strength");
-  printStringToLeft(FONT_SMALL,false,&buf[0], _virtualPosX, -186);
-  snprintf(buf,10,"Weapon");
-  printStringToRight(FONT_SMALL,false,&buf[0], -_virtualPosX, -170);
-  snprintf(buf,10,"Heat");
-  printStringToRight(FONT_SMALL,false,&buf[0], -_virtualPosX, -186);
+
+  printStringToRight(FONT_SMALL, false, "Scanner",  RADAR_SIZE/2 - _virtualPosX - 35 + 10, 17 + RADAR_SIZE - _virtualPosY);
+  printStringToLeft( FONT_SMALL, false, "Sensor",   -RADAR_SIZE/2 + _virtualPosX + 30 - 10, 17 + RADAR_SIZE - _virtualPosY);
+  printStringToLeft( FONT_SMALL, false, "Shield",   _virtualPosX,                          -170);
+  printStringToLeft( FONT_SMALL, false, "Strength", _virtualPosX,                          -186);
+  printStringToRight(FONT_SMALL, false, "Weapon",   -_virtualPosX,                         -170);
+  printStringToRight(FONT_SMALL, false, "Heat",     -_virtualPosX,                         -186);
   
   glDisable(GL_BLEND);
 }

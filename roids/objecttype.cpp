@@ -70,7 +70,7 @@ objecttype* objecttype::sectorUpdate(){
     // make it possible to players/AIs to notice the object with sensors and scanners
     if( _timestamp % AI_UPDATE_DIVISOR == 0 ){    // AI update on some physics updates
       _radar[xSectorIndex][ySectorIndex][_radarNew].visibility += visibilityFactor;
-      _radar[xSectorIndex][ySectorIndex][_radarNew].visibility += detectabilityFactor;
+      _radar[xSectorIndex][ySectorIndex][_radarNew].detectability += detectabilityFactor;
     }
     
     if( isDead ){
