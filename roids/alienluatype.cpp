@@ -591,10 +591,25 @@ void alienluatype::aiupdate(){
 
 
 int alienluatype::findHot(lua_State *L){
-  float r = luaL_checknumber(L, 1);
-  float g = luaL_checknumber(L, 2);   // or luaL_tonumber() ?
-  float b = luaL_checknumber(L, 3);
-  fprintf(stdout,"Got (%f) (%f) (%f).\n",r,g,b);
+
+  // filter away targets that are too faint
+  // NOTE: there is no particular limit on how many results will be returned except the number of sectors
+  float minVisibility = luaL_checknumber(L, 1);    // sensor
+  float minDetectability = luaL_checknumber(L, 2); // scanner
+
+  for(int i=0;i<NUM_SECTORS_PER_SIDE;++i){
+    int distX = pow(i - xSectorIndex,2);
+    for(int j=0;j<NUM_SECTORS_PER_SIDE;++j){
+      if(i == xSectorIndex && j == ySectorIndex)
+        continue;   // avoid a distance of zero
+      float invdist = 1.0 / (float)(distX + pow(j - ySectorIndex,2));
+      bool condA = _radar[i][j][!_radarNew].visibility * invdist > minVisibility;
+      bool condB = _radar[i][j][!_radarNew].detectability * invdist > minDetectability;
+      if(condA || condB){
+        fprintf(stdout,"Return (%d,%d) as target.\n",i,j);
+      }
+    }
+  }
   return 1;
 }
 

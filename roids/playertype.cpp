@@ -759,10 +759,10 @@ void standardRadarBits(float shipX, float shipY){
   // outer edge
   glColor3f(0.8,0.8,0.0);
   glBegin(GL_LINE_LOOP);
-    glVertex2f(0,0);
-    glVertex2f(RADAR_SIZE,0);
-    glVertex2f(RADAR_SIZE,RADAR_SIZE);
-    glVertex2f(0,RADAR_SIZE);
+    glVertex2f(-1,-1);
+    glVertex2f(RADAR_SIZE+1,-1);
+    glVertex2f(RADAR_SIZE+1,RADAR_SIZE+1);
+    glVertex2f(-1,RADAR_SIZE+1);
   glEnd();
 }
 
@@ -876,7 +876,7 @@ void playertype::drawScanner(){
   standardRadarBits(shipX,shipY);
 
   glPopMatrix();
-  
+
   // *********************************************************************
   // labels (for various things not just the scanner display)
   // some other bits of text are done over in draw.cpp, so not related to the player
@@ -884,13 +884,13 @@ void playertype::drawScanner(){
   glEnable(GL_BLEND);
   glColor4f(0.7,0.7,0.0,0.65);
 
-  printStringToRight(FONT_SMALL, false, "Scanner",  RADAR_SIZE/2 - _virtualPosX - 35 + 10, 17 + RADAR_SIZE - _virtualPosY);
-  printStringToLeft( FONT_SMALL, false, "Sensor",   -RADAR_SIZE/2 + _virtualPosX + 30 - 10, 17 + RADAR_SIZE - _virtualPosY);
+  printStringToRight(FONT_SMALL, false, "Scanner",  RADAR_SIZE/2 - _virtualPosX - 35 + 10, 20 + RADAR_SIZE - _virtualPosY);
+  printStringToLeft( FONT_SMALL, false, "Sensor",   -RADAR_SIZE/2 + _virtualPosX + 30 - 10, 20 + RADAR_SIZE - _virtualPosY);
   printStringToLeft( FONT_SMALL, false, "Shield",   _virtualPosX,                          -170);
   printStringToLeft( FONT_SMALL, false, "Strength", _virtualPosX,                          -186);
   printStringToRight(FONT_SMALL, false, "Weapon",   -_virtualPosX,                         -170);
   printStringToRight(FONT_SMALL, false, "Heat",     -_virtualPosX,                         -186);
-  
+
   glDisable(GL_BLEND);
 }
 

@@ -338,6 +338,7 @@ end
 function aiUpdate(world)
   print(string.format("Time is %d.",world.timestamp))
   if dangerouslyCloseMassive(world.myself, world.massiveObjects[1]) then
+    -- eventually convert to a loop over all massive objects
     setAiFlee(true)
     setAiAttack(false)
     setAiSearch(false)
@@ -347,6 +348,6 @@ function aiUpdate(world)
     setAiAttack(true)
     setAiSearch(true)
     setEngine(false)
-    findHot(1,2,6)
+    findHot(0.1,0.1)
   end
 end
