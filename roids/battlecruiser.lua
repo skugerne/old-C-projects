@@ -8,9 +8,9 @@ radius = 150;   -- how large the collision circle and shield are
 mass = 100;   -- how heavy in collisions
 
 -- each pre-scaled for DT of 1/1000
-turnRate = .0075;       -- how fast it turns .... 0.075 = 75 deg/S
+turnRate = .02;         -- how fast it turns .... 0.075 = 75 deg/S
 enginePower = .000125;  -- how fast it accelerates .... 0.00125 = 1250 PPS^2
-maxSpeed = 1.0;        -- some kind of max speed ... 1.0 = 1000 PPS
+maxSpeed = 1.0;         -- some kind of max speed ... 1.0 = 1000 PPS
 
 shieldPoints = 100;
 
@@ -261,7 +261,7 @@ end
 function dangerouslyCloseMassive(myself, massiveOb)
   if massiveOb.g > 0 then
     local dd = sqDistance(myself, massiveOb)
-    if dd <= 0 or massiveOb.g / dd > 0.000001 then
+    if dd <= 0 or massiveOb.g / dd > 0.00001 then
       return true
     end
   end
@@ -272,9 +272,6 @@ end
 function avoid(myself, massiveOb)
   print("Dangerously close to massive object.")
   props = makeReport(myself, massiveOb)
-
-  -- the C side keeps things in 0-2pi, Lua side is +pi to -pi
-  myself.angle = boundAngle(myself.angle)
 
   print(
     string.format(
@@ -336,7 +333,12 @@ end
 
 
 function aiUpdate(world)
+
+  -- the C side keeps things in 0-2pi, Lua side is +pi to -pi
+  world.myself.angle = boundAngle(world.myself.angle)
+
   print(string.format("Time is %d.",world.timestamp))
+
   if dangerouslyCloseMassive(world.myself, world.massiveObjects[1]) then
     -- eventually convert to a loop over all massive objects
     setAiFlee(true)
@@ -348,7 +350,30 @@ function aiUpdate(world)
     setAiAttack(true)
     setAiSearch(true)
     setEngine(false)
+
     results = findHot(0.1,0.1)
-    dump(results)
+    sector = results.sectors[1]
+    if type(sector) ~= "nil" then
+      local distX = sector.x - world.myself.x
+      local distY = sector.y - world.myself.y
+      local bearing = math.atan(distY, distX)
+      local anglediff = boundAngle(world.myself.angle - bearing)
+      local absAnglediff = math.abs(anglediff)
+      if absAnglediff < math.pi * 0.05 then
+        setEngine(true)
+        setTurnLeft(false)
+        setTurnRight(false)
+      else
+        if anglediff > 0 then
+          print("Turn right.")
+          setTurnLeft(false)
+          setTurnRight(true)
+        else
+          print("Turn left.")
+          setTurnLeft(true)
+          setTurnRight(false)
+        end
+      end
+    end
   end
 end

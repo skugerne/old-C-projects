@@ -680,8 +680,8 @@ int alienluatype::findHot(lua_State *L){
   //   1:
   //     x: coordinate of sector
   //     y: coordinate of sector
-  //     detectability: sum of scanner signal from sector
-  //     visibility: sum of sensor signal from sector
+  //     detectabilityMultiple: sum of scanner signal from sector
+  //     visibilityMultiple: sum of sensor signal from sector
 
   int startstacksize = lua_gettop(L);
 
@@ -709,10 +709,10 @@ int alienluatype::findHot(lua_State *L){
     lua_setfield(L, -2, "y");
 
     lua_pushnumber(L, results[i].detectabilityMultiple);
-    lua_setfield(L, -2, "detectability");
+    lua_setfield(L, -2, "detectabilityMultiple");
 
     lua_pushnumber(L, results[i].visibilityMultiple);
-    lua_setfield(L, -2, "visibility");
+    lua_setfield(L, -2, "visibilityMultiple");
 
     lua_settable(L, -3);                  // put table into table, pop insertion index and table from stack
   }
