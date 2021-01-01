@@ -592,24 +592,143 @@ void alienluatype::aiupdate(){
 
 int alienluatype::findHot(lua_State *L){
 
-  // filter away targets that are too faint
-  // NOTE: there is no particular limit on how many results will be returned except the number of sectors
+  // a hard-coded limit on the number of sectors that will be returned
+  #define MAX_RESULTS 3
+
+  typedef struct { 
+    int i;
+    int j;
+    float visibilityMultiple;
+    float detectabilityMultiple;
+  } result_type;
+
+  result_type results[MAX_RESULTS+1];    // list is one element longer than the max result size
+
+  int sectorCount = 0;
+  for(int i=0;i<MAX_RESULTS;++i){
+    results[i].visibilityMultiple = 0;
+    results[i].detectabilityMultiple = 0;
+  }
+
+  // find suitable sectors
   float minVisibility = luaL_checknumber(L, 1);    // sensor
   float minDetectability = luaL_checknumber(L, 2); // scanner
 
   for(int i=0;i<NUM_SECTORS_PER_SIDE;++i){
     int distX = pow(i - xSectorIndex,2);
     for(int j=0;j<NUM_SECTORS_PER_SIDE;++j){
-      if(i == xSectorIndex && j == ySectorIndex)
+      if(abs(i-xSectorIndex) < SECTOR_VISION_RANGE && abs(j-ySectorIndex) < SECTOR_VISION_RANGE)
         continue;   // avoid a distance of zero
       float invdist = 1.0 / (float)(distX + pow(j - ySectorIndex,2));
-      bool condA = _radar[i][j][!_radarNew].visibility * invdist > minVisibility;
-      bool condB = _radar[i][j][!_radarNew].detectability * invdist > minDetectability;
-      if(condA || condB){
-        fprintf(stdout,"Return (%d,%d) as target.\n",i,j);
+      float visibilityMultiple = _radar[i][j][!_radarNew].visibility * invdist;
+      float detectabilityMultiple = _radar[i][j][!_radarNew].detectability * invdist;
+      if(visibilityMultiple > minVisibility || minDetectability > minDetectability){
+
+        // push down items  ...  note list is (MAX_RESULTS+1) long
+        int k=MAX_RESULTS;
+        for(;k>0;--k){
+          bool condA = visibilityMultiple > minVisibility && results[k-1].visibilityMultiple < visibilityMultiple;
+          bool condB = detectabilityMultiple > minDetectability && results[k-1].detectabilityMultiple < detectabilityMultiple;
+          if(condA || condB){
+            results[k].i = results[k-1].i;
+            results[k].j = results[k-1].j;
+            results[k].visibilityMultiple = results[k-1].visibilityMultiple;
+            results[k].detectabilityMultiple = results[k-1].detectabilityMultiple;
+          }else{
+            break;
+          }
+        }
+
+        // insert where we stopped  ...  note the "extra" element in the list is thrown away
+        if(k < MAX_RESULTS){
+          sectorCount += 1;
+          #ifdef DEBUG_ALIEN_FIGHTER
+          fprintf(stdout,"Keep (%d,%d) as target at index %d (values %0.01f & %0.01f).\n",i,j,k,visibilityMultiple,detectabilityMultiple);
+          #endif
+          results[k].i = i;
+          results[k].j = j;
+          results[k].visibilityMultiple = visibilityMultiple;
+          results[k].detectabilityMultiple = detectabilityMultiple;
+        }else{
+          #ifdef DEBUG_ALIEN_FIGHTER
+          fprintf(stdout,"Drop (%d,%d) as target because its too weak (values %0.01f & %0.01f).\n",i,j,visibilityMultiple,detectabilityMultiple);
+          #endif
+        }
       }
     }
   }
+
+  #ifdef DEBUG_ALIEN_FIGHTER
+  for(int i=0;i<(sectorCount < MAX_RESULTS ? sectorCount : MAX_RESULTS);++i){
+    fprintf(
+      stdout,
+      "Return (%d,%d) as target at index %d (values %0.01f & %0.01f).\n",
+      results[i].i,
+      results[i].j,
+      i,
+      results[i].visibilityMultiple,
+      results[i].detectabilityMultiple
+    );
+  }
+  #endif
+
+  // we will create a tripple-nested table
+  // objects:
+  //   1:
+  //     { fields from objecttype::asLuaTable() }
+  // sectors:
+  //   1:
+  //     x: coordinate of sector
+  //     y: coordinate of sector
+  //     detectability: sum of scanner signal from sector
+  //     visibility: sum of sensor signal from sector
+
+  int startstacksize = lua_gettop(L);
+
+  // creates a new empty table and pushes it onto the stack
+  lua_createtable(L, 2, 0);               // expect 2 tables, 0 other elements
+
+  lua_createtable(L, 0, 0);               // expect 0 tables, 0 other elements
+  lua_setfield(L, -2, "objects");         // currently provide no info about objects
+
+  lua_createtable(L, sectorCount, 0);     // expect 'sectorCount' tables and no other elements
+
+  for(int i=0;i<(sectorCount < MAX_RESULTS ? sectorCount : MAX_RESULTS);++i){
+    #ifdef DEBUG_ALIEN_FIGHTER
+    fprintf(stdout,"Append sector %d.\n",i);
+    #endif
+
+    lua_pushnumber(L, i+1);               // add at indexes, starting at 1
+
+    lua_createtable(L, 0, 4);             // expect no tables, 4 regular elements
+
+    lua_pushnumber(L, results[i].i * SECTOR_SIZE);
+    lua_setfield(L, -2, "x");
+
+    lua_pushnumber(L, results[i].j * SECTOR_SIZE);
+    lua_setfield(L, -2, "y");
+
+    lua_pushnumber(L, results[i].detectabilityMultiple);
+    lua_setfield(L, -2, "detectability");
+
+    lua_pushnumber(L, results[i].visibilityMultiple);
+    lua_setfield(L, -2, "visibility");
+
+    lua_settable(L, -3);                  // put table into table, pop insertion index and table from stack
+  }
+
+  lua_setfield(L, -2, "sectors");         // attach the list of the sectors, pop that table off the stack
+
+  if(lua_type(L,-1) != LUA_TTABLE){
+    fprintf(stderr,"The top of the stack (end of findHot) has type (should have table): %d\n", lua_type(L,-1));
+    exit(1);
+  }
+
+  if(lua_gettop(L) != startstacksize+1){
+    fprintf(stderr,"There is more than one new item on the stack (end of findHot) (expected %d, got %d).\n",startstacksize+1,lua_gettop(L));
+    exit(1);
+  }
+
   return 1;
 }
 

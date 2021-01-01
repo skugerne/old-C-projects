@@ -348,6 +348,7 @@ function aiUpdate(world)
     setAiAttack(true)
     setAiSearch(true)
     setEngine(false)
-    findHot(0.1,0.1)
+    results = findHot(0.1,0.1)
+    dump(results)
   end
 end

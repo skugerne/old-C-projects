@@ -69,8 +69,9 @@ typedef void *(*pthread_func_t)(void*);
 #define DT 0.001                    // 1000 updates per second
 #define AI_UPDATE_DIVISOR 10        // 100 control samples per second for AI or player
 
-#define NUM_SECTORS_PER_SIDE     256   // note: sensor & scanner use this dimension as well
+#define NUM_SECTORS_PER_SIDE     256   // sensor & scanner array uses this dimension as well
 #define SECTOR_SIZE              512
+#define SECTOR_VISION_RANGE      4     // how many sectors out a player or AI should be given lists of objects rather than sector-aggregrated stats
 
 #define MAX_COORDINATE           NUM_SECTORS_PER_SIDE*SECTOR_SIZE
 #define MAX_SPEED                4
