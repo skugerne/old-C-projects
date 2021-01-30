@@ -52,14 +52,14 @@ class alienluatype : public alientype {
     void prepLuaTablePropery(Uint, const char *);
     void init();
 
-    int findHot(lua_State *);
-    int setEngine(lua_State *);
-    int setTurnLeft(lua_State *);
-    int setTurnRight(lua_State *);
-    int setWeapon(lua_State *);
-    int setAiFlee(lua_State *);
-    int setAiAttack(lua_State *);
-    int setAiSearch(lua_State *);
+    int findHot();
+    int setEngine();
+    int setTurnLeft();
+    int setTurnRight();
+    int setWeapon();
+    int setAiFlee();
+    int setAiAttack();
+    int setAiSearch();
 
     #ifdef DEBUG_ALIEN_FIGHTER
     bool aiFlee;                    // display AI intent to run away

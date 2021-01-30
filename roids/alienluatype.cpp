@@ -2,14 +2,14 @@
 
 
 
-typedef int (alienluatype::*mem_func)(lua_State * L);
+typedef int (alienluatype::*mem_func)();
 
 // this template wraps a member function into a C-style "free" function compatible with lua
 // https://stackoverflow.com/questions/32416388/how-to-register-member-function-to-lua-without-lua-bind-in-c
 template <mem_func func>
 int dispatch(lua_State * L) {
     alienluatype * ptr = *static_cast<alienluatype**>(lua_getextraspace(L));
-    return ((*ptr).*func)(L);
+    return ((*ptr).*func)();
 }
 
 
@@ -542,9 +542,6 @@ void alienluatype::aifollow(objecttype *target, double deadAngle, double engineA
 void alienluatype::aiupdate(){
   fprintf(stdout,"Do aiupdate() at %d.\n",SDL_GetTicks());
 
-  // setting our direction (to be moved to Lua)
-  //if( _playerShip ) aifollow(_playerShip, 30, 20);
-
   // call out to Lua to manage the AI choices
   lua_getglobal(L, "aiUpdate");
   if (lua_isfunction(L, -1)) {
@@ -590,9 +587,10 @@ void alienluatype::aiupdate(){
 
 
 
-int alienluatype::findHot(lua_State *L){
+int alienluatype::findHot(){
 
-  // a hard-coded limit on the number of sectors that will be returned
+  // a hard-coded limit on the number of objects and sectors that will be returned
+  // this is because probably its not interesting to track too many targets, so we save time by not trying
   #define MAX_RESULTS 3
 
   typedef struct { 
@@ -600,14 +598,15 @@ int alienluatype::findHot(lua_State *L){
     int j;
     float visibilityMultiple;
     float detectabilityMultiple;
-  } result_type;
+  } sector_result_type;
 
-  result_type results[MAX_RESULTS+1];    // list is one element longer than the max result size
+  sector_result_type sector_results[MAX_RESULTS+1];    // list is one element longer than the max result size
 
-  int sectorCount = 0;
+  int objectCount = 0;    // things close enough to list separately
+  int sectorCount = 0;    // things far enough away to be grouped into sectors
   for(int i=0;i<MAX_RESULTS;++i){
-    results[i].visibilityMultiple = 0;
-    results[i].detectabilityMultiple = 0;
+    sector_results[i].visibilityMultiple = 0;
+    sector_results[i].detectabilityMultiple = 0;
   }
 
   // find suitable sectors
@@ -627,13 +626,13 @@ int alienluatype::findHot(lua_State *L){
         // push down items  ...  note list is (MAX_RESULTS+1) long
         int k=MAX_RESULTS;
         for(;k>0;--k){
-          bool condA = visibilityMultiple > minVisibility && results[k-1].visibilityMultiple < visibilityMultiple;
-          bool condB = detectabilityMultiple > minDetectability && results[k-1].detectabilityMultiple < detectabilityMultiple;
+          bool condA = visibilityMultiple > minVisibility && sector_results[k-1].visibilityMultiple < visibilityMultiple;
+          bool condB = detectabilityMultiple > minDetectability && sector_results[k-1].detectabilityMultiple < detectabilityMultiple;
           if(condA || condB){
-            results[k].i = results[k-1].i;
-            results[k].j = results[k-1].j;
-            results[k].visibilityMultiple = results[k-1].visibilityMultiple;
-            results[k].detectabilityMultiple = results[k-1].detectabilityMultiple;
+            sector_results[k].i = sector_results[k-1].i;
+            sector_results[k].j = sector_results[k-1].j;
+            sector_results[k].visibilityMultiple = sector_results[k-1].visibilityMultiple;
+            sector_results[k].detectabilityMultiple = sector_results[k-1].detectabilityMultiple;
           }else{
             break;
           }
@@ -645,10 +644,10 @@ int alienluatype::findHot(lua_State *L){
           #ifdef DEBUG_ALIEN_FIGHTER
           fprintf(stdout,"Keep (%d,%d) as target at index %d (values %0.01f & %0.01f).\n",i,j,k,visibilityMultiple,detectabilityMultiple);
           #endif
-          results[k].i = i;
-          results[k].j = j;
-          results[k].visibilityMultiple = visibilityMultiple;
-          results[k].detectabilityMultiple = detectabilityMultiple;
+          sector_results[k].i = i;
+          sector_results[k].j = j;
+          sector_results[k].visibilityMultiple = visibilityMultiple;
+          sector_results[k].detectabilityMultiple = detectabilityMultiple;
         }else{
           #ifdef DEBUG_ALIEN_FIGHTER
           fprintf(stdout,"Drop (%d,%d) as target because its too weak (values %0.01f & %0.01f).\n",i,j,visibilityMultiple,detectabilityMultiple);
@@ -663,11 +662,11 @@ int alienluatype::findHot(lua_State *L){
     fprintf(
       stdout,
       "Return (%d,%d) as target at index %d (values %0.01f & %0.01f).\n",
-      results[i].i,
-      results[i].j,
+      sector_results[i].i,
+      sector_results[i].j,
       i,
-      results[i].visibilityMultiple,
-      results[i].detectabilityMultiple
+      sector_results[i].visibilityMultiple,
+      sector_results[i].detectabilityMultiple
     );
   }
   #endif
@@ -688,8 +687,33 @@ int alienluatype::findHot(lua_State *L){
   // creates a new empty table and pushes it onto the stack
   lua_createtable(L, 2, 0);               // expect 2 tables, 0 other elements
 
-  lua_createtable(L, 0, 0);               // expect 0 tables, 0 other elements
-  lua_setfield(L, -2, "objects");         // currently provide no info about objects
+  lua_createtable(L, objectCount, 0);     // expect 'objectCount' tables, 0 other elements
+
+  for(int i=0;i<(objectCount < MAX_RESULTS ? objectCount : MAX_RESULTS);++i){
+    #ifdef DEBUG_ALIEN_FIGHTER
+    fprintf(stdout,"Append object %d.\n",i);
+    #endif
+
+    lua_pushnumber(L, i+1);               // add at indexes, starting at 1
+
+    lua_createtable(L, 0, 4);             // expect no tables, 4 regular elements
+
+    lua_pushnumber(L, sector_results[i].i * SECTOR_SIZE);
+    lua_setfield(L, -2, "x");
+
+    lua_pushnumber(L, sector_results[i].j * SECTOR_SIZE);
+    lua_setfield(L, -2, "y");
+
+    lua_pushnumber(L, sector_results[i].detectabilityMultiple);
+    lua_setfield(L, -2, "detectabilityMultiple");
+
+    lua_pushnumber(L, sector_results[i].visibilityMultiple);
+    lua_setfield(L, -2, "visibilityMultiple");
+
+    lua_settable(L, -3);                  // put table into table, pop insertion index and table from stack
+  }
+
+  lua_setfield(L, -2, "objects");         // put the table under the key 'objects'
 
   lua_createtable(L, sectorCount, 0);     // expect 'sectorCount' tables and no other elements
 
@@ -702,16 +726,16 @@ int alienluatype::findHot(lua_State *L){
 
     lua_createtable(L, 0, 4);             // expect no tables, 4 regular elements
 
-    lua_pushnumber(L, results[i].i * SECTOR_SIZE);
+    lua_pushnumber(L, sector_results[i].i * SECTOR_SIZE);
     lua_setfield(L, -2, "x");
 
-    lua_pushnumber(L, results[i].j * SECTOR_SIZE);
+    lua_pushnumber(L, sector_results[i].j * SECTOR_SIZE);
     lua_setfield(L, -2, "y");
 
-    lua_pushnumber(L, results[i].detectabilityMultiple);
+    lua_pushnumber(L, sector_results[i].detectabilityMultiple);
     lua_setfield(L, -2, "detectabilityMultiple");
 
-    lua_pushnumber(L, results[i].visibilityMultiple);
+    lua_pushnumber(L, sector_results[i].visibilityMultiple);
     lua_setfield(L, -2, "visibilityMultiple");
 
     lua_settable(L, -3);                  // put table into table, pop insertion index and table from stack
@@ -734,7 +758,7 @@ int alienluatype::findHot(lua_State *L){
 
 
 
-int alienluatype::setEngine(lua_State *L){
+int alienluatype::setEngine(){
   #ifdef DEBUG_OBJECTTYPE
   fprintf(stderr,"In alienluatype::setEngine for idNum %u.\n",idNum);  // check message is delivered to right object
   #endif
@@ -744,21 +768,21 @@ int alienluatype::setEngine(lua_State *L){
 
 
 
-int alienluatype::setTurnLeft(lua_State *L){
+int alienluatype::setTurnLeft(){
   turningLeft = lua_toboolean(L, 1);
   return 1;
 }
 
 
 
-int alienluatype::setTurnRight(lua_State *L){
+int alienluatype::setTurnRight(){
   turningRight = lua_toboolean(L, 1);
   return 1;
 }
 
 
 
-int alienluatype::setWeapon(lua_State *L){
+int alienluatype::setWeapon(){
   bool state = lua_toboolean(L, 1);
   Uint32 weapon = luaL_checknumber(L, 2);   // or luaL_tonumber() ?
   fprintf(stdout,"setWeapon %d %d\n",state,weapon);
@@ -768,7 +792,7 @@ int alienluatype::setWeapon(lua_State *L){
 
 
 
-int alienluatype::setAiFlee(lua_State *L){
+int alienluatype::setAiFlee(){
   #ifdef DEBUG_ALIEN_FIGHTER
   aiFlee = lua_toboolean(L, 1);
   #endif
@@ -777,7 +801,7 @@ int alienluatype::setAiFlee(lua_State *L){
 
 
 
-int alienluatype::setAiAttack(lua_State *L){
+int alienluatype::setAiAttack(){
   #ifdef DEBUG_ALIEN_FIGHTER
   aiAttack = lua_toboolean(L, 1);
   #endif
@@ -786,7 +810,7 @@ int alienluatype::setAiAttack(lua_State *L){
 
 
 
-int alienluatype::setAiSearch(lua_State *L){
+int alienluatype::setAiSearch(){
   #ifdef DEBUG_ALIEN_FIGHTER
   aiSearch = lua_toboolean(L, 1);
   #endif
