@@ -11,6 +11,7 @@ roidtype::roidtype(double X, double Y, double DX, double DY, double M){
   mass = M;
   
   collisionModifier = COLLIDE_ROID;
+  nameString = "Asteroid";
   
   setRandomRotation();
   
@@ -382,9 +383,6 @@ void roidtype::determineMode(){
 void roidtype::initStandardMode(){
   // radius varies a bit, is 6x at one point, not 5x
   radius = 4 * sqrt(mass);
-  
-  nameString = "Std Roid";
-  
   scale = sqrt(mass)/3;
 }
 

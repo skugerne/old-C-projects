@@ -195,10 +195,10 @@ class startype;
 
 
 struct sectortype {
-  objecttype *first;
   Uint timestamp;      // timestamp indicates if contents are fresh, or can be ignored
+  objecttype *first;   // list of objects that are (or were, if stale) if this sector
 
-  // the gravity map ... pps accel
+  // the static gravity map ... pps accel
   float xAccel, yAccel, brightness;
   bool nearCenter;
 };
@@ -206,9 +206,7 @@ struct sectortype {
 
 
 struct radartype {
-  Uint timestamp;
-
-  // totals for things in this sector
+  // totals for objects in this sector
   float visibility, detectability;
 };
 
@@ -236,6 +234,7 @@ struct particlesystemtype {
 
 // sector parameters
 extern sectortype _sectors[NUM_SECTORS_PER_SIDE][NUM_SECTORS_PER_SIDE];
+extern radartype _radar[NUM_SECTORS_PER_SIDE][NUM_SECTORS_PER_SIDE][2];
 
 // window parameters
 extern SDL_Surface *_screen;
@@ -274,7 +273,6 @@ extern shiptype *_playerShip, *_otherPlayerShip;
 extern playertype *_player;
 extern int _level;
 extern Uint _curPlayers;
-extern radartype _radar[NUM_SECTORS_PER_SIDE][NUM_SECTORS_PER_SIDE][2];
 extern bool _radarNew;
 
 // inputs

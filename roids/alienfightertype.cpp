@@ -10,6 +10,7 @@ alienfightertype::alienfightertype(double X, double Y){
   angle = 0;
  
   collisionModifier = COLLIDE_ALIEN;
+  nameString = "Fighter";
 
   basicInit();
 

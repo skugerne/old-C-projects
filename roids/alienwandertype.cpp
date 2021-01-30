@@ -10,6 +10,7 @@ alienwandertype::alienwandertype(double X, double Y){
   angle = 0;
  
   collisionModifier = COLLIDE_ALIEN;
+  nameString = "Wanderer";
 
   basicInit();
 

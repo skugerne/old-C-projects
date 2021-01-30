@@ -8,7 +8,7 @@ radius = 150;   -- how large the collision circle and shield are
 mass = 100;   -- how heavy in collisions
 
 -- each pre-scaled for DT of 1/1000
-turnRate = .02;         -- how fast it turns .... 0.075 = 75 deg/S
+turnRate = .04;         -- how fast it turns .... 0.075 = 75 deg/S
 enginePower = .000125;  -- how fast it accelerates .... 0.00125 = 1250 PPS^2
 maxSpeed = 1.0;         -- some kind of max speed ... 1.0 = 1000 PPS
 
@@ -352,27 +352,37 @@ function aiUpdate(world)
     setEngine(false)
 
     results = findHot(0.1,0.1)
-    sector = results.sectors[1]
-    if type(sector) ~= "nil" then
-      local distX = sector.x - world.myself.x
-      local distY = sector.y - world.myself.y
-      local bearing = math.atan(distY, distX)
-      local anglediff = boundAngle(world.myself.angle - bearing)
-      local absAnglediff = math.abs(anglediff)
-      if absAnglediff < math.pi * 0.05 then
-        setEngine(true)
+    local targX
+    local targY
+    if type(results.objects[1]) ~= "nil" then
+      targX = results.objects[1].x     -- hottest, not a function of distance
+      targY = results.objects[1].y
+    elseif type(results.sectors[1]) ~= "nil" then
+      targX = results.sectors[1].x     -- hottest, which is also a function of distance
+      targY = results.sectors[1].y
+    else
+      targX = world.maxCoordinate / 2
+      targY = world.maxCoordinate / 2
+    end
+
+    local distX = targX - world.myself.x
+    local distY = targY - world.myself.y
+    local bearing = math.atan(distY, distX)
+    local anglediff = boundAngle(world.myself.angle - bearing)
+    local absAnglediff = math.abs(anglediff)
+    if absAnglediff < math.pi * 0.05 then
+      setEngine(true)
+      setTurnLeft(false)
+      setTurnRight(false)
+    else
+      if anglediff > 0 then
+        print("Turn right.")
         setTurnLeft(false)
-        setTurnRight(false)
+        setTurnRight(true)
       else
-        if anglediff > 0 then
-          print("Turn right.")
-          setTurnLeft(false)
-          setTurnRight(true)
-        else
-          print("Turn left.")
-          setTurnLeft(true)
-          setTurnRight(false)
-        end
+        print("Turn left.")
+        setTurnLeft(true)
+        setTurnRight(false)
       end
     end
   end

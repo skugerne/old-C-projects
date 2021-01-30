@@ -73,6 +73,7 @@ alienluatype::alienluatype(double X, double Y, const char *filename){
   angle = 0;
  
   collisionModifier = COLLIDE_ALIEN;
+  nameString = "Lua Ship";
 
   basicInit();
 
@@ -545,7 +546,7 @@ void alienluatype::aiupdate(){
   // call out to Lua to manage the AI choices
   lua_getglobal(L, "aiUpdate");
   if (lua_isfunction(L, -1)) {
-    // we need to send in a nested table
+    // we need to send in a nested table (called "world" in at least the first Lua script)
 
     lua_createtable(L, 0, 4);               // NOTE: should match number of items
 
@@ -591,7 +592,7 @@ int alienluatype::findHot(){
 
   // a hard-coded limit on the number of objects and sectors that will be returned
   // this is because probably its not interesting to track too many targets, so we save time by not trying
-  #define MAX_RESULTS 3
+  #define MAX_RESULTS 10
 
   typedef struct { 
     int i;
@@ -600,65 +601,128 @@ int alienluatype::findHot(){
     float detectabilityMultiple;
   } sector_result_type;
 
-  sector_result_type sector_results[MAX_RESULTS+1];    // list is one element longer than the max result size
+  // lists are each one element longer than the max result size
+  objecttype *object_results[MAX_RESULTS+1];
+  sector_result_type sector_results[MAX_RESULTS+1];
 
   int objectCount = 0;    // things close enough to list separately
   int sectorCount = 0;    // things far enough away to be grouped into sectors
   for(int i=0;i<MAX_RESULTS;++i){
+    object_results[i] = NULL;
     sector_results[i].visibilityMultiple = 0;
     sector_results[i].detectabilityMultiple = 0;
   }
 
-  // find suitable sectors
+  // find suitable sectors based on the sensitivity thresholds passed from Lua
   float minVisibility = luaL_checknumber(L, 1);    // sensor
   float minDetectability = luaL_checknumber(L, 2); // scanner
 
   for(int i=0;i<NUM_SECTORS_PER_SIDE;++i){
     int distX = pow(i - xSectorIndex,2);
     for(int j=0;j<NUM_SECTORS_PER_SIDE;++j){
-      if(abs(i-xSectorIndex) < SECTOR_VISION_RANGE && abs(j-ySectorIndex) < SECTOR_VISION_RANGE)
-        continue;   // avoid a distance of zero
-      float invdist = 1.0 / (float)(distX + pow(j - ySectorIndex,2));
-      float visibilityMultiple = _radar[i][j][!_radarNew].visibility * invdist;
-      float detectabilityMultiple = _radar[i][j][!_radarNew].detectability * invdist;
-      if(visibilityMultiple > minVisibility || minDetectability > minDetectability){
+      if(abs(i-xSectorIndex) < SECTOR_VISION_RANGE && abs(j-ySectorIndex) < SECTOR_VISION_RANGE){
+        // ==== OBJECTS ====
 
-        // push down items  ...  note list is (MAX_RESULTS+1) long
-        int k=MAX_RESULTS;
-        for(;k>0;--k){
-          bool condA = visibilityMultiple > minVisibility && sector_results[k-1].visibilityMultiple < visibilityMultiple;
-          bool condB = detectabilityMultiple > minDetectability && sector_results[k-1].detectabilityMultiple < detectabilityMultiple;
-          if(condA || condB){
-            sector_results[k].i = sector_results[k-1].i;
-            sector_results[k].j = sector_results[k-1].j;
-            sector_results[k].visibilityMultiple = sector_results[k-1].visibilityMultiple;
-            sector_results[k].detectabilityMultiple = sector_results[k-1].detectabilityMultiple;
+        if(_sectors[i][j].timestamp != _timestamp) continue;  // ignore stale sectors
+
+        objecttype *oPtr = _sectors[i][j].first;
+        while(oPtr){
+          if(oPtr != this){  // ignore self
+            // push down items
+            int k=MAX_RESULTS;   // loop backwards, starting one element short of the length
+            for(;k>0;--k){
+              bool condA = object_results[k-1] == NULL || object_results[k-1]->getVisibility() < oPtr->getVisibility();
+              bool condB = object_results[k-1] == NULL || object_results[k-1]->getDetectability() < oPtr->getDetectability();
+              if(condA || condB){    // push down stuff worse than ourselves
+                object_results[k] = object_results[k-1];  // note list is (MAX_RESULTS+1) long
+              }else{
+                break;  // stop pushing down because we found our spot
+              }
+            }
+
+            // insert where we stopped
+            // note the "extra" element in the list is thrown away, and we dump useless stuff there
+            if(k < MAX_RESULTS){
+              objectCount += 1;
+              #ifdef DEBUG_ALIEN_FIGHTER
+              fprintf(stdout,"Keep object as target at index %d (values %0.01f & %0.01f).\n",k,oPtr->getVisibility(),oPtr->getDetectability());
+              #endif
+              object_results[k] = oPtr;
+            }else{
+              #ifdef DEBUG_ALIEN_FIGHTER
+              fprintf(stdout,"Drop object as target because its too weak (values %0.01f & %0.01f).\n",oPtr->getVisibility(),oPtr->getDetectability());
+              #endif
+            }
+          }
+          oPtr = oPtr->getSecMore();
+        }
+
+        // ==== END OBJECT SELECTION ====
+      }else{
+        // ==== SECTORS ====
+
+        float invdist = 1.0 / (float)(distX + pow(j - ySectorIndex,2));
+        float visibilityMultiple = _radar[i][j][!_radarNew].visibility * invdist;
+        float detectabilityMultiple = _radar[i][j][!_radarNew].detectability * invdist;
+        if(visibilityMultiple > minVisibility || minDetectability > minDetectability){
+
+          // push down items
+          int k=MAX_RESULTS;   // loop backwards, starting one element short of the length
+          for(;k>0;--k){
+            bool condA = visibilityMultiple > minVisibility && sector_results[k-1].visibilityMultiple < visibilityMultiple;
+            bool condB = detectabilityMultiple > minDetectability && sector_results[k-1].detectabilityMultiple < detectabilityMultiple;
+            if(condA || condB){    // push down stuff worse than ourselves
+              sector_results[k].i = sector_results[k-1].i;  // note list is (MAX_RESULTS+1) long
+              sector_results[k].j = sector_results[k-1].j;
+              sector_results[k].visibilityMultiple = sector_results[k-1].visibilityMultiple;
+              sector_results[k].detectabilityMultiple = sector_results[k-1].detectabilityMultiple;
+            }else{
+              break;  // stop pushing down because we found our spot
+            }
+          }
+
+          // insert where we stopped
+          // note the "extra" element in the list is thrown away, and we dump useless stuff there
+          if(k < MAX_RESULTS){
+            sectorCount += 1;
+            #ifdef DEBUG_ALIEN_FIGHTER
+            fprintf(stdout,"Keep (%d,%d) as target at index %d (values %0.01f & %0.01f).\n",i,j,k,visibilityMultiple,detectabilityMultiple);
+            #endif
+            sector_results[k].i = i;
+            sector_results[k].j = j;
+            sector_results[k].visibilityMultiple = visibilityMultiple;
+            sector_results[k].detectabilityMultiple = detectabilityMultiple;
           }else{
-            break;
+            #ifdef DEBUG_ALIEN_FIGHTER
+            fprintf(stdout,"Drop (%d,%d) as target because its too weak (values %0.01f & %0.01f).\n",i,j,visibilityMultiple,detectabilityMultiple);
+            #endif
           }
         }
 
-        // insert where we stopped  ...  note the "extra" element in the list is thrown away
-        if(k < MAX_RESULTS){
-          sectorCount += 1;
-          #ifdef DEBUG_ALIEN_FIGHTER
-          fprintf(stdout,"Keep (%d,%d) as target at index %d (values %0.01f & %0.01f).\n",i,j,k,visibilityMultiple,detectabilityMultiple);
-          #endif
-          sector_results[k].i = i;
-          sector_results[k].j = j;
-          sector_results[k].visibilityMultiple = visibilityMultiple;
-          sector_results[k].detectabilityMultiple = detectabilityMultiple;
-        }else{
-          #ifdef DEBUG_ALIEN_FIGHTER
-          fprintf(stdout,"Drop (%d,%d) as target because its too weak (values %0.01f & %0.01f).\n",i,j,visibilityMultiple,detectabilityMultiple);
-          #endif
-        }
+        // ==== END SECTOR SELECTION ====
       }
     }
   }
 
+  // limit these to the length of the results lists
+  objectCount = objectCount < MAX_RESULTS ? objectCount : MAX_RESULTS;
+  sectorCount = sectorCount < MAX_RESULTS ? sectorCount : MAX_RESULTS;
+
   #ifdef DEBUG_ALIEN_FIGHTER
-  for(int i=0;i<(sectorCount < MAX_RESULTS ? sectorCount : MAX_RESULTS);++i){
+  fprintf(stdout,"Return %d objects to Lua.\n",objectCount);
+  for(int i=0;i<objectCount;++i){
+    fprintf(
+      stdout,
+      "Return %s as target at index %d (values %0.01f & %0.01f).\n",
+      object_results[i]->name(),
+      i,
+      object_results[i]->getVisibility(),
+      object_results[i]->getDetectability()
+    );
+  }
+
+  fprintf(stdout,"Return %d sectors to Lua.\n",sectorCount);
+  for(int i=0;i<sectorCount;++i){
     fprintf(
       stdout,
       "Return (%d,%d) as target at index %d (values %0.01f & %0.01f).\n",
@@ -689,27 +753,13 @@ int alienluatype::findHot(){
 
   lua_createtable(L, objectCount, 0);     // expect 'objectCount' tables, 0 other elements
 
-  for(int i=0;i<(objectCount < MAX_RESULTS ? objectCount : MAX_RESULTS);++i){
+  for(int i=0;i<objectCount;++i){
     #ifdef DEBUG_ALIEN_FIGHTER
     fprintf(stdout,"Append object %d.\n",i);
     #endif
 
     lua_pushnumber(L, i+1);               // add at indexes, starting at 1
-
-    lua_createtable(L, 0, 4);             // expect no tables, 4 regular elements
-
-    lua_pushnumber(L, sector_results[i].i * SECTOR_SIZE);
-    lua_setfield(L, -2, "x");
-
-    lua_pushnumber(L, sector_results[i].j * SECTOR_SIZE);
-    lua_setfield(L, -2, "y");
-
-    lua_pushnumber(L, sector_results[i].detectabilityMultiple);
-    lua_setfield(L, -2, "detectabilityMultiple");
-
-    lua_pushnumber(L, sector_results[i].visibilityMultiple);
-    lua_setfield(L, -2, "visibilityMultiple");
-
+    object_results[i]->asLuaTable(L);     // add a table describing the object
     lua_settable(L, -3);                  // put table into table, pop insertion index and table from stack
   }
 
@@ -717,7 +767,7 @@ int alienluatype::findHot(){
 
   lua_createtable(L, sectorCount, 0);     // expect 'sectorCount' tables and no other elements
 
-  for(int i=0;i<(sectorCount < MAX_RESULTS ? sectorCount : MAX_RESULTS);++i){
+  for(int i=0;i<sectorCount;++i){
     #ifdef DEBUG_ALIEN_FIGHTER
     fprintf(stdout,"Append sector %d.\n",i);
     #endif

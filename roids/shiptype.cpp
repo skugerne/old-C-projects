@@ -12,6 +12,7 @@ shiptype::shiptype(shipnametype MODE, double X, double Y){
   angle = 0;
   
   collisionModifier = COLLIDE_SHIP;
+  nameString = "Player Ship";
   
   basicInit();
   

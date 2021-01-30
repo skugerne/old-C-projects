@@ -168,6 +168,7 @@ shottype::shottype(shotorigintype shotorigin, double lAngle, shotnametype name, 
   basicInit();
   
   collisionModifier = COLLIDE_WEAPON;
+  nameString = "Shot";
   
   baseVisibility = 1;
   detectabilityFactor = 1 * radius;

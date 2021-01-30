@@ -15,6 +15,7 @@ startype::startype(double X, double Y, double DX, double DY, double M){
   radius = STAR_RADIUS;
   
   collisionModifier = COLLIDE_STAR;
+  nameString = "Star";
   
   basicInit();
 }

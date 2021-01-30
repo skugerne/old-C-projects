@@ -13,6 +13,7 @@ alienrambotype::alienrambotype(double X, double Y){
   weaponAngle = 180;
  
   collisionModifier = COLLIDE_ALIEN;
+  nameString = "Rambo";
 
   basicInit();
 
