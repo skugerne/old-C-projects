@@ -13,11 +13,11 @@ class roidtype : public objecttype {
     objecttype* specialUpdate();
     
     // an input for the effects of collisions
-    void collisionEffect(double,objectcollisiontype);
+    void collisionEffect(double,objectcategorytype);
     void destroy(){return;}
     
     // get functions
-    double getWarhead(objectcollisiontype){return 0.0;}
+    double getWarhead(objectcategorytype){return 0.0;}
   protected:
     void breakUp();
     

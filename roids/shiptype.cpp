@@ -11,7 +11,7 @@ shiptype::shiptype(shipnametype MODE, double X, double Y){
   yChange = 0;
   angle = 0;
   
-  collisionModifier = COLLIDE_SHIP;
+  collisionModifier = CATEGORY_SHIP;
   nameString = "Player Ship";
   
   basicInit();
@@ -252,13 +252,13 @@ objecttype* shiptype::specialUpdate(){
 
 
 
-void shiptype::collisionEffect(double damage, objectcollisiontype what){
+void shiptype::collisionEffect(double damage, objectcategorytype what){
   shldStrength -= damage;
   
   if(shldStrength < 0 && !isDead){
     this->destroy();
   }else{
-    if(what == COLLIDE_DUST){
+    if(what == CATEGORY_DUST){
       shieldGlow += .1;
       if(shieldGlow > 1) shieldGlow = 1;
       else if(shieldGlow < .3) shieldGlow = .3;
@@ -352,7 +352,7 @@ void shiptype::falseifyControls(){
 
 
 
-double shiptype::getWarhead(objectcollisiontype other){
+double shiptype::getWarhead(objectcategorytype other){
   // some day add support for ramming shields here
   return 0.0;
 }

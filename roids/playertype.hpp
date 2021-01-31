@@ -23,9 +23,9 @@ class playertype : public objecttype {
     void addShake(float more){shake += more;}
     
     // here because objecttype says so
-    void collisionEffect(double,objectcollisiontype){return;}
+    void collisionEffect(double,objectcategorytype){return;}
     void destroy(){return;}
-    double getWarhead(objectcollisiontype){return 0.0;}
+    double getWarhead(objectcategorytype){return 0.0;}
     
     // makes string that holds commands, pass it to _playerShip
     Uchar* makeCommandString();

@@ -22,9 +22,9 @@ class alienwandertype : public alientype {
     objecttype* specialUpdate();
     
     // an input for the effects of collisions
-    void collisionEffect(double,objectcollisiontype);
+    void collisionEffect(double,objectcategorytype);
 
-    double getWarhead(objectcollisiontype){return 0.0;}
+    double getWarhead(objectcategorytype){return 0.0;}
   protected:
     
     #ifdef DEBUG_ALIEN_WANDER

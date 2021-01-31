@@ -75,17 +75,23 @@ void initUpdate(){
       _sectors[i][j].brightness = accel * 10000000;
     }
   }
-  
+
   // set the valid indicator for the radar to true
   _radarNew = true;
-  
+
   // clear the radar
   for(int i=0;i<NUM_SECTORS_PER_SIDE;++i){
     for(int j=0;j<NUM_SECTORS_PER_SIDE;++j){
-      _radar[i][j][_radarNew].visibility = 0;
-      _radar[i][j][!_radarNew].visibility = 0;
-      _radar[i][j][_radarNew].detectability = 0;
-      _radar[i][j][!_radarNew].detectability = 0;
+      _radar[i][j][_radarNew].visibilitySum = 0;
+      _radar[i][j][!_radarNew].visibilitySum = 0;
+      _radar[i][j][_radarNew].detectabilitySum = 0;
+      _radar[i][j][!_radarNew].detectabilitySum = 0;
+      _radar[i][j][_radarNew].radiusSum = 0;
+      _radar[i][j][!_radarNew].radiusSum = 0;
+      _radar[i][j][_radarNew].weightedXChange = 0;
+      _radar[i][j][!_radarNew].weightedXChange = 0;
+      _radar[i][j][_radarNew].weightedYChange = 0;
+      _radar[i][j][!_radarNew].weightedYChange = 0;
     }
   }
 }
@@ -254,19 +260,19 @@ void updateObjects(int iterations){
         // ... ship we want to delete
         if(_player)
           _player->makeTarget(NULL);
-        
+
         _playerShip = NULL;
       }
-      
+
       delete _deadObjects;
-      
+
       // keep the object count accurate
       --_numObj;
     }
     _deadObjects = NULL;
-    
+
     // *********************************************************************
-    
+
     ++_timestamp;
     ++_updates;
 
@@ -274,12 +280,15 @@ void updateObjects(int iterations){
       _radarNew = !_radarNew;                     // radar "buffer" flip
       for(int i=0;i<NUM_SECTORS_PER_SIDE;++i){    // clear the radar
         for(int j=0;j<NUM_SECTORS_PER_SIDE;++j){
-          _radar[i][j][_radarNew].visibility = 0;
-          _radar[i][j][_radarNew].detectability = 0;
+          _radar[i][j][_radarNew].visibilitySum = 0;
+          _radar[i][j][_radarNew].detectabilitySum = 0;
+          _radar[i][j][_radarNew].radiusSum = 0;
+          _radar[i][j][_radarNew].weightedXChange = 0;
+          _radar[i][j][_radarNew].weightedYChange = 0;
         }
       }
     }
-    
+
     #ifdef DEBUG_OBJECTTYPE
     fprintf(stderr,"Finished object updates.\n");
     #endif

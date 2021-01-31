@@ -72,7 +72,7 @@ alienluatype::alienluatype(double X, double Y, const char *filename){
   yChange = 0;
   angle = 0;
  
-  collisionModifier = COLLIDE_ALIEN;
+  collisionModifier = CATEGORY_SHIP;
   nameString = "Lua Ship";
 
   basicInit();
@@ -461,7 +461,7 @@ objecttype* alienluatype::specialUpdate(){
 
 
 
-void alienluatype::collisionEffect(double damage, objectcollisiontype what){
+void alienluatype::collisionEffect(double damage, objectcategorytype what){
   shieldPoints -= damage;
   
   if(shieldPoints < 0 && !isDead){
@@ -487,7 +487,7 @@ void alienluatype::collisionEffect(double damage, objectcollisiontype what){
     for(Uint i=0;i<15;++i)
       createDust(xCoordinate,yCoordinate,xChange,yChange,2);
   }else{
-    if(what == COLLIDE_DUST){
+    if(what == CATEGORY_DUST){
       shieldGlow += .1;
       if(shieldGlow > 1) shieldGlow = 1;
       else if(shieldGlow < .3) shieldGlow = .3;
@@ -589,6 +589,15 @@ void alienluatype::aiupdate(){
 
 
 int alienluatype::findHot(){
+  // *** to be called from Lua ***
+
+  // find suitable sectors based on the sensitivity thresholds passed from Lua
+  float minVisibility = luaL_checknumber(L, 1);    // sensor
+  float minDetectability = luaL_checknumber(L, 2); // scanner
+  bool returnShips = lua_toboolean(L, 3);
+  bool returnRocks = lua_toboolean(L, 4);
+  bool returnShots = lua_toboolean(L, 5);
+  bool returnGoodies = lua_toboolean(L, 6);
 
   // a hard-coded limit on the number of objects and sectors that will be returned
   // this is because probably its not interesting to track too many targets, so we save time by not trying
@@ -612,10 +621,6 @@ int alienluatype::findHot(){
     sector_results[i].visibilityMultiple = 0;
     sector_results[i].detectabilityMultiple = 0;
   }
-
-  // find suitable sectors based on the sensitivity thresholds passed from Lua
-  float minVisibility = luaL_checknumber(L, 1);    // sensor
-  float minDetectability = luaL_checknumber(L, 2); // scanner
 
   for(int i=0;i<NUM_SECTORS_PER_SIDE;++i){
     int distX = pow(i - xSectorIndex,2);
@@ -650,7 +655,7 @@ int alienluatype::findHot(){
               object_results[k] = oPtr;
             }else{
               #ifdef DEBUG_ALIEN_FIGHTER
-              fprintf(stdout,"Drop object as target because its too weak (values %0.01f & %0.01f).\n",oPtr->getVisibility(),oPtr->getDetectability());
+              fprintf(stdout,"Drop object as target because its too faint (values %0.01f & %0.01f).\n",oPtr->getVisibility(),oPtr->getDetectability());
               #endif
             }
           }
@@ -662,8 +667,8 @@ int alienluatype::findHot(){
         // ==== SECTORS ====
 
         float invdist = 1.0 / (float)(distX + pow(j - ySectorIndex,2));
-        float visibilityMultiple = _radar[i][j][!_radarNew].visibility * invdist;
-        float detectabilityMultiple = _radar[i][j][!_radarNew].detectability * invdist;
+        float visibilityMultiple = _radar[i][j][!_radarNew].visibilitySum * invdist;
+        float detectabilityMultiple = _radar[i][j][!_radarNew].detectabilitySum * invdist;
         if(visibilityMultiple > minVisibility || minDetectability > minDetectability){
 
           // push down items
@@ -694,7 +699,7 @@ int alienluatype::findHot(){
             sector_results[k].detectabilityMultiple = detectabilityMultiple;
           }else{
             #ifdef DEBUG_ALIEN_FIGHTER
-            fprintf(stdout,"Drop (%d,%d) as target because its too weak (values %0.01f & %0.01f).\n",i,j,visibilityMultiple,detectabilityMultiple);
+            fprintf(stdout,"Drop (%d,%d) as target because its too faint (values %0.01f & %0.01f).\n",i,j,visibilityMultiple,detectabilityMultiple);
             #endif
           }
         }

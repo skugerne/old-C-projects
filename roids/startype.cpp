@@ -10,13 +10,13 @@ startype::startype(double X, double Y, double DX, double DY, double M){
   yChange = DY;
   mass = M;
   hasGravity = true;
-  
+
   // variable used for the usual object interactions, not for drawing
   radius = STAR_RADIUS;
   
-  collisionModifier = COLLIDE_STAR;
+  collisionModifier = CATEGORY_STAR;
   nameString = "Star";
-  
+
   basicInit();
 }
 

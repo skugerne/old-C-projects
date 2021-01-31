@@ -19,11 +19,11 @@ class startype : public objecttype {
     objecttype* specialUpdate();
     
     // an input for the effects of collisions
-    void collisionEffect(double,objectcollisiontype){return;}
+    void collisionEffect(double,objectcategorytype){return;}
     void destroy(){return;}
     
     // lotsa damage for touching the star
-    double getWarhead(objectcollisiontype){return INSTANT_DEATH;}
+    double getWarhead(objectcategorytype){return INSTANT_DEATH;}
   protected:
   
 };

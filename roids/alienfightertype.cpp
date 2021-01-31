@@ -9,7 +9,7 @@ alienfightertype::alienfightertype(double X, double Y){
   yChange = 0;
   angle = 0;
  
-  collisionModifier = COLLIDE_ALIEN;
+  collisionModifier = CATEGORY_SHIP;
   nameString = "Fighter";
 
   basicInit();
@@ -181,7 +181,7 @@ objecttype* alienfightertype::specialUpdate(){
 
  
  
-void alienfightertype::collisionEffect(double damage, objectcollisiontype what){
+void alienfightertype::collisionEffect(double damage, objectcategorytype what){
   shieldPoints -= damage;
   
   if(shieldPoints < 0 && !isDead){
@@ -207,7 +207,7 @@ void alienfightertype::collisionEffect(double damage, objectcollisiontype what){
     for(int i=0;i<15;++i)
       createDust(xCoordinate,yCoordinate,xChange,yChange,2);
   }else{
-    if(what == COLLIDE_DUST){
+    if(what == CATEGORY_DUST){
       shieldGlow += .1;
       if(shieldGlow > 1) shieldGlow = 1;
       else if(shieldGlow < .3) shieldGlow = .3;

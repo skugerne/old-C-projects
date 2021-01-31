@@ -12,7 +12,7 @@ alienrambotype::alienrambotype(double X, double Y){
   angle = 0;
   weaponAngle = 180;
  
-  collisionModifier = COLLIDE_ALIEN;
+  collisionModifier = CATEGORY_SHIP;
   nameString = "Rambo";
 
   basicInit();
@@ -262,10 +262,10 @@ objecttype* alienrambotype::specialUpdate(){
  
  
  
-void alienrambotype::collisionEffect(double damage, objectcollisiontype what){
+void alienrambotype::collisionEffect(double damage, objectcategorytype what){
   
   // only damaged by weapons and the star
-  if(what == COLLIDE_WEAPON || what == COLLIDE_STAR){
+  if(what == CATEGORY_SHOT || what == CATEGORY_STAR){
     shieldPoints -= damage;
   }
   
@@ -292,7 +292,7 @@ void alienrambotype::collisionEffect(double damage, objectcollisiontype what){
     for(int i=0;i<15;++i)
       createDust(xCoordinate,yCoordinate,xChange,yChange,2);
   }else{
-    if(what == COLLIDE_DUST){
+    if(what == CATEGORY_DUST){
       shieldGlow += .1;
       if(shieldGlow > 1) shieldGlow = 1;
       else if(shieldGlow < .3) shieldGlow = .3;

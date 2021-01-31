@@ -38,7 +38,7 @@ class objecttype {
     objecttype *sectorUpdate();
     objecttype virtual *specialUpdate() = 0;
     
-    void virtual collisionEffect(double,objectcollisiontype) = 0;
+    void virtual collisionEffect(double,objectcategorytype) = 0;
     void virtual destroy() = 0;
     
     // returns distance from given objecttype
@@ -72,8 +72,8 @@ class objecttype {
     const char* name(){return nameString;}
     double getDetectability(){return detectabilityFactor;}
     double getVisibility(){return visibilityFactor;}
-    objectcollisiontype getCollisionMod(){return collisionModifier;}
-    double virtual getWarhead(objectcollisiontype) = 0;
+    objectcategorytype getCollisionMod(){return collisionModifier;}
+    double virtual getWarhead(objectcategorytype) = 0;
     bool getDead(){return isDead;}
     void asLuaTable(lua_State *);
 
@@ -105,31 +105,31 @@ class objecttype {
     objecttype *sectorLess;
     objecttype *sectorMore;
     const char *nameString;
-    
+
     unsigned int sectorUpdateWhen;
     bool inBounds;
     void setInBounds();
-    
+
     void placeInSector();           // involves collision detect
     void checkSectorRecur(objecttype*);
     void checkSector(sectortype*);
     void collideWithEdges();
     void gravitate();
     void thrust(double,double,double);
-    objectcollisiontype collisionModifier;
-    
+    objectcategorytype collisionModifier;
+
     int xSectorIndex;
     int ySectorIndex;
     double xCoordinate;
     double yCoordinate;
     double xChange;
     double yChange;
-    
+
     double angle;
     double mass;
     double radius;
     bool hasGravity;
-    
+
     double visibilityFactor, baseVisibility;
     double detectabilityFactor;
 };

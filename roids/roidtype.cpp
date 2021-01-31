@@ -10,7 +10,7 @@ roidtype::roidtype(double X, double Y, double DX, double DY, double M){
   yChange = DY;
   mass = M;
   
-  collisionModifier = COLLIDE_ROID;
+  collisionModifier = CATEGORY_ROCK;
   nameString = "Asteroid";
   
   setRandomRotation();
@@ -83,19 +83,19 @@ void roidtype::draw(){
 
 
 
-void roidtype::collisionEffect(double damage, objectcollisiontype what){
+void roidtype::collisionEffect(double damage, objectcategorytype what){
 
-  if(what == COLLIDE_WEAPON){
+  if(what == CATEGORY_SHOT){
     hitPoints -= damage;
-    
+
     if(hitPoints <= 0){
       if(mass < 5) die(hitPoints - damage);
       else breakUp();
     }
-    
+
     // turn on the visual cue
     damageGlow = 2.0;
-  }else if(what == COLLIDE_STAR){
+  }else if(what == CATEGORY_STAR){
     if(mass < 15){
       die(0);
     }else{

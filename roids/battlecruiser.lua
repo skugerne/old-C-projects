@@ -351,7 +351,7 @@ function aiUpdate(world)
     setAiSearch(true)
     setEngine(false)
 
-    results = findHot(0.1,0.1)
+    results = findHot(0.1, 0.1, true, true, false, false)
     local targX
     local targY
     if type(results.objects[1]) ~= "nil" then

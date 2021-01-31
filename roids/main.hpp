@@ -103,22 +103,18 @@ enum viewtype { VIEW_WORLD_AXIS_ALIGNED,
                 VIEW_PLAYER_MOTION_ALIGNED,
                 VIEW_SIDESCROLL_ALIGNED,
                 VIEW_PLAYER_AXIS_ALIGNED};
-                    
-// 2 bits networking (4 possible values)                                     
+          
 enum shipnametype { SHIP_STEALTH,
                     SHIP_BATTLE,
                     SHIP_WIZZARD };
-                    
-enum objectcollisiontype { COLLIDE_STAR,
-                           COLLIDE_ROID,
-                           COLLIDE_SHIP,
-                           COLLIDE_BASE,
-                           COLLIDE_ALIEN,
-                           COLLIDE_GOODIES,
-                           COLLIDE_WEAPON,
-                           COLLIDE_DEFLECT,
-                           COLLIDE_FLAME,
-                           COLLIDE_DUST };
+
+enum objectcategorytype { CATEGORY_STAR,
+                          CATEGORY_ROCK,     // includes rocky planets
+                          CATEGORY_SHIP,     // players or AI, also bases
+                          CATEGORY_SHOT,     // includes missles
+                          CATEGORY_GOODIES,
+                          CATEGORY_FLAME,
+                          CATEGORY_DUST };
 
 enum partclasstype { PART_WEAPON,
                      PART_ENGINE,
@@ -128,8 +124,7 @@ enum partclasstype { PART_WEAPON,
                      PART_SENSCAN,
                      PART_OTHER,
                      PART_EMPTY };
-                    
-// 10 bits networking (1024 possible values)
+
 enum partnametype {  PART_WEAPON_LCAN,
                      PART_ENGINE_CHEM,
                      PART_THRUSTER_CHEM,
@@ -142,7 +137,6 @@ enum partnametype {  PART_WEAPON_LCAN,
                      PART_REACTOR_LFUS,
                      PART_EMPTY_BASIC };
 
-// 3 bits networking
 enum thrusteractiontype { THRUSTER_GO,
                           THRUSTER_STOP,
                           THRUSTER_L,
@@ -206,8 +200,11 @@ struct sectortype {
 
 
 struct radartype {
-  // totals for objects in this sector
-  float visibility, detectability;
+  // all values are totals for objects in this sector
+  // a player or AI should only directly examine other objects when they are close enough (SECTOR_VISION_RANGE)
+  float visibilitySum, detectabilitySum;    // an observer must scale this according to viewing distance
+  float radiusSum;                          // used for internal computations, not intended for use by player or AI
+  float weightedXChange, weightedYChange;   // the end result is a weighted average xChange and yChange
 };
 
 
@@ -222,7 +219,7 @@ struct particletype {
 struct particlesystemtype {
   particletype *particles;
   Uint validBegin, validEnd, count;
-  objectcollisiontype what;
+  objectcategorytype what;
 };
 
 
@@ -324,7 +321,7 @@ void setPaused(bool);
                   
 // in collision.cpp
 void collision(objecttype*,objecttype*);
-void collision(float,float,float*,float*,objecttype*,objectcollisiontype);
+void collision(float,float,float*,float*,objecttype*,objectcategorytype);
 
 // in create.cpp
 void resetForNewGame();

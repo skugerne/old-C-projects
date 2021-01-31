@@ -167,7 +167,7 @@ shottype::shottype(shotorigintype shotorigin, double lAngle, shotnametype name, 
   
   basicInit();
   
-  collisionModifier = COLLIDE_WEAPON;
+  collisionModifier = CATEGORY_SHOT;
   nameString = "Shot";
   
   baseVisibility = 1;
@@ -274,20 +274,21 @@ void shottype::draw(){
 
 
 
-void shottype::collisionEffect(double damage, objectcollisiontype what){
+void shottype::collisionEffect(double damage, objectcategorytype what){
   #ifdef DEBUG_OBJECTTYPE
   fprintf(stderr,"Shot %d collide.\n",idNum);
   #endif
   
-  if(damage > 0 && what != COLLIDE_DEFLECT)
+  // TODO: deflector shields on 'other' should cause things to bounce off, except SHOT_PROX
+  if(damage > 0)
     explode();
 }
 
 
 
-double shottype::getWarhead(objectcollisiontype other){
-  if(other == COLLIDE_DEFLECT && shotMod != SHOT_PROX) return 0.0;
-  else return warhead;
+double shottype::getWarhead(objectcategorytype other){
+  // TODO: deflector shields on 'other' should cause things to bounce off, except SHOT_PROX
+  return warhead;
 }
 
 

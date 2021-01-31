@@ -11,20 +11,20 @@ void initParticles(){
   _flame.validBegin = 0;
   _flame.validEnd = 0;
   _flame.count = NUM_FLAME;
-  _flame.what = COLLIDE_FLAME;
+  _flame.what = CATEGORY_FLAME;
   
   _dust.particles = new particletype[NUM_DUST];
   _dust.validBegin = 0;
   _dust.validEnd = 0;
   _dust.count = NUM_DUST;
-  _dust.what = COLLIDE_DUST;
+  _dust.what = CATEGORY_DUST;
 }
 
 
 
 // neatens up collision detection some
 void particleCollideWrapper(
-  int sectorX, int sectorY, float x, float y, float *dx, float *dy, objectcollisiontype what
+  int sectorX, int sectorY, float x, float y, float *dx, float *dy, objectcategorytype what
 ){
   objecttype *nodePtr;
   
@@ -55,7 +55,7 @@ void particleCollideWrapper(
 
 
 void particleCheckCollisions(
-  int sectorX, int sectorY, float x, float y, float *dx, float *dy, objectcollisiontype what
+  int sectorX, int sectorY, float x, float y, float *dx, float *dy, objectcategorytype what
 ){
   if(checkCollideNow){
     

@@ -106,8 +106,8 @@ void collision(objecttype *obj1, objecttype *obj2){
   obj2->yChange = obj2->dy() + (sin(centersAngle) * v2);
   
   // setting up objects for retransmit (no real effect on client)
-  objectcollisiontype type1 = obj1->getCollisionMod();
-  objectcollisiontype type2 = obj2->getCollisionMod();
+  objectcategorytype type1 = obj1->getCollisionMod();
+  objectcategorytype type2 = obj2->getCollisionMod();
   
   double warhead1 = obj1->getWarhead(type2);
   double warhead2 = obj2->getWarhead(type1);
@@ -148,7 +148,7 @@ void collision(objecttype *obj1, objecttype *obj2){
 // particle collisions with objects, note that particles always call this and ...
 // ... not the objects, because particles update separately
 void collision(
-  float px, float py, float *pdx, float *pdy, objecttype *oPtr, objectcollisiontype what
+  float px, float py, float *pdx, float *pdy, objecttype *oPtr, objectcategorytype what
 ){
   
   #ifdef DEBUG_COLLISIONS

@@ -60,19 +60,22 @@ objecttype* objecttype::sectorUpdate(){
   #ifdef DEBUG_OBJECTTYPE
   fprintf(stderr,"Sector update for #%u.\n",idNum);
   #endif
-  
+
   // some things aren't safe if we are somehow out of bounds
   if( inBounds ){
-    
+
     // checks for collisions, calls fcn to actually put this in _sector[][]
     placeInSector();
-    
+
     // make it possible to players/AIs to notice the object with sensors and scanners
     if( _timestamp % AI_UPDATE_DIVISOR == 0 ){    // AI update on some physics updates
-      _radar[xSectorIndex][ySectorIndex][_radarNew].visibility += visibilityFactor;
-      _radar[xSectorIndex][ySectorIndex][_radarNew].detectability += detectabilityFactor;
+      _radar[xSectorIndex][ySectorIndex][_radarNew].visibilitySum += visibilityFactor;
+      _radar[xSectorIndex][ySectorIndex][_radarNew].detectabilitySum += detectabilityFactor;
+      _radar[xSectorIndex][ySectorIndex][_radarNew].radiusSum += radius;
+      _radar[xSectorIndex][ySectorIndex][_radarNew].weightedXChange += radius * xChange;
+      _radar[xSectorIndex][ySectorIndex][_radarNew].weightedYChange += radius * yChange;
     }
-    
+
     if( isDead ){
       // woops, we got killed this update
       // (isDead is a member of objecttype usually set elsewhere)
@@ -80,12 +83,12 @@ objecttype* objecttype::sectorUpdate(){
       #ifdef DEBUG_OBJECTTYPE
       fprintf(stderr,"Setting deadNext, moving dead object to dead list.\n");
       #endif
-      
+
       // deadNext holds the next in update list, we've been moved to dead list
       objecttype *deadNext = next;
-      
+
       moveToDead();
-      
+
       return deadNext;
     }
   }

@@ -799,10 +799,10 @@ void playertype::drawSensor(){
         int distX = i2 - shipX;
         distX *= distX;
         for(int j2=j*RADAR_DATA_DIVISOR;j2<j*RADAR_DATA_DIVISOR+RADAR_DATA_DIVISOR;++j2){
-          if(_radar[i2][j2][!_radarNew].visibility > 0){
+          if(_radar[i2][j2][!_radarNew].visibilitySum > 0){
             int distY = j2 - shipY;
             distY *= distY;
-            visibility += _radar[i2][j2][!_radarNew].visibility / (float)(distX + distY);
+            visibility += _radar[i2][j2][!_radarNew].visibilitySum / (float)(distX + distY);
           }
         }
       }
@@ -855,10 +855,10 @@ void playertype::drawScanner(){
         int distX = i2 - shipX;
         distX *= distX;
         for(int j2=j*RADAR_DATA_DIVISOR;j2<j*RADAR_DATA_DIVISOR+RADAR_DATA_DIVISOR;++j2){
-          if(_radar[i2][j2][!_radarNew].detectability > 0){
+          if(_radar[i2][j2][!_radarNew].detectabilitySum > 0){
             int distY = j2 - shipY;
             distY *= distY;
-            detectability += _radar[i2][j2][!_radarNew].detectability / (float)(distX + distY);
+            detectability += _radar[i2][j2][!_radarNew].detectabilitySum / (float)(distX + distY);
           }
         }
       }
