@@ -306,10 +306,10 @@ void alienluatype::init(){
   engineOn = false;
   turningRight = false;
   turningLeft = false;
-  
-  baseVisibility = 1;
-  detectabilityFactor = 1 * radius;
-  
+
+  baseVisibility = 1;           // a measure of how much illumination makes the object visible (for example color)
+  detectability = 1 * radius;   // how apparent it is to radar-like scanning
+
   engineGlow = 0;
   shieldGlow = 0;
 }
@@ -548,7 +548,7 @@ void alienluatype::aiupdate(){
   if (lua_isfunction(L, -1)) {
     // we need to send in a nested table (called "world" in at least the first Lua script)
 
-    lua_createtable(L, 0, 4);               // NOTE: should match number of items
+    lua_createtable(L, 0, 4);               // table primed for a number of hash-indexed items
 
     lua_pushnumber(L, _timestamp);
     lua_setfield(L, -2, "timestamp");       // maybe the AI wants to know what the time is
@@ -567,7 +567,7 @@ void alienluatype::aiupdate(){
     lua_setfield(L, -2, "myself");          // the AI needs to know where it is
 
     // a list of massive objects to be afraid of
-    lua_createtable(L, 1, 0);               // NOTE: should match number of items (a list)
+    lua_createtable(L, 1, 0);               // table primed for a certain number of massive items in a list
 
     // FIXME: if there is multiple massive objects, this should be a loop
     lua_pushnumber(L, 1);                   // add at indexes, starting at 1
@@ -738,9 +738,13 @@ int alienluatype::findHot(){
       sector_results[i].detectabilityMultiple
     );
   }
+
+  int startstacksize = lua_gettop(L);
   #endif
 
   // we will create a tripple-nested table
+  // objectCount: num
+  // sectorCount: num
   // objects:
   //   1:
   //     { fields from objecttype::asLuaTable() }
@@ -748,15 +752,20 @@ int alienluatype::findHot(){
   //   1:
   //     x: coordinate of sector
   //     y: coordinate of sector
+  //     dx: radius-weighted average xChange for whatever the sector contains
+  //     dy: radius-weighted average yChange for whatever the sector contains
   //     detectabilityMultiple: sum of scanner signal from sector
   //     visibilityMultiple: sum of sensor signal from sector
 
-  int startstacksize = lua_gettop(L);
-
   // creates a new empty table and pushes it onto the stack
-  lua_createtable(L, 2, 0);               // expect 2 tables, 0 other elements
+  lua_createtable(L, 0, 4);               // prime for 4 hash-indexed items
 
-  lua_createtable(L, objectCount, 0);     // expect 'objectCount' tables, 0 other elements
+  lua_pushnumber(L, objectCount);
+  lua_setfield(L, -2, "objectCount");
+  lua_pushnumber(L, sectorCount);
+  lua_setfield(L, -2, "sectorCount");
+
+  lua_createtable(L, objectCount, 0);     // expect 'objectCount' items in a list
 
   for(int i=0;i<objectCount;++i){
     #ifdef DEBUG_ALIEN_FIGHTER
@@ -770,7 +779,7 @@ int alienluatype::findHot(){
 
   lua_setfield(L, -2, "objects");         // put the table under the key 'objects'
 
-  lua_createtable(L, sectorCount, 0);     // expect 'sectorCount' tables and no other elements
+  lua_createtable(L, sectorCount, 0);     // expect 'sectorCount' items in a list
 
   for(int i=0;i<sectorCount;++i){
     #ifdef DEBUG_ALIEN_FIGHTER
@@ -779,17 +788,21 @@ int alienluatype::findHot(){
 
     lua_pushnumber(L, i+1);               // add at indexes, starting at 1
 
-    lua_createtable(L, 0, 4);             // expect no tables, 4 regular elements
+    lua_createtable(L, 0, 6);             // expect 6 hash-indexed items
 
     lua_pushnumber(L, sector_results[i].i * SECTOR_SIZE);
     lua_setfield(L, -2, "x");
-
     lua_pushnumber(L, sector_results[i].j * SECTOR_SIZE);
     lua_setfield(L, -2, "y");
 
+    radartype *rPtr = _radar[sector_results[i].i][sector_results[i].j];
+    lua_pushnumber(L, rPtr->weightedXChange / rPtr->radiusSum);
+    lua_setfield(L, -2, "dx");
+    lua_pushnumber(L, rPtr->weightedYChange / rPtr->radiusSum);
+    lua_setfield(L, -2, "dy");
+
     lua_pushnumber(L, sector_results[i].detectabilityMultiple);
     lua_setfield(L, -2, "detectabilityMultiple");
-
     lua_pushnumber(L, sector_results[i].visibilityMultiple);
     lua_setfield(L, -2, "visibilityMultiple");
 
@@ -798,6 +811,7 @@ int alienluatype::findHot(){
 
   lua_setfield(L, -2, "sectors");         // attach the list of the sectors, pop that table off the stack
 
+  #ifdef DEBUG_ALIEN_FIGHTER
   if(lua_type(L,-1) != LUA_TTABLE){
     fprintf(stderr,"The top of the stack (end of findHot) has type (should have table): %d\n", lua_type(L,-1));
     exit(1);
@@ -807,6 +821,7 @@ int alienluatype::findHot(){
     fprintf(stderr,"There is more than one new item on the stack (end of findHot) (expected %d, got %d).\n",startstacksize+1,lua_gettop(L));
     exit(1);
   }
+  #endif
 
   return 1;
 }

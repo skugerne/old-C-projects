@@ -31,12 +31,12 @@ alienrambotype::alienrambotype(double X, double Y){
   turningRight = false;
   turningLeft = false;
   weaponOn = false;
-  
-  baseVisibility = 1;
-  detectabilityFactor = 1 * radius;
-  
+
+  baseVisibility = 1;           // a measure of how much illumination makes the object visible (for example color)
+  detectability = 1 * radius;   // how apparent it is to radar-like scanning
+
   engineGlow = 0;
-  weaponGlow = 0;
+  shieldGlow = 0;
   
   weaponAngle = 90.0;
   weaponTurnRate = .180;

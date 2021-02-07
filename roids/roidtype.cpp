@@ -30,9 +30,9 @@ roidtype::roidtype(double X, double Y, double DX, double DY, double M){
   }else{
     initBezierMode();
   }
-  
-  baseVisibility = 1;
-  detectabilityFactor = 1 * radius;
+
+  baseVisibility = 1;           // a measure of how much illumination makes the object visible (for example color)
+  detectability = 1 * radius;   // how apparent it is to radar-like scanning
 }
 
 

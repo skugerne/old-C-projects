@@ -25,9 +25,12 @@ shiptype::shiptype(shipnametype MODE, double X, double Y){
   
   // pre-scaled by DT of 1/1000 (squared, in the case of accell)
   engineThrust = .00125;
-  
+
+  baseVisibility = 1;           // a measure of how much illumination makes the object visible (for example color)
+  detectability = 1 * radius;   // how apparent it is to radar-like scanning
+
   shieldGlow = 0;
-  
+
   //----------------------------------------------------------------------
   // *** note ***
   // I am initializing various properties of this ship that are in fact ...

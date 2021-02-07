@@ -6,22 +6,20 @@
 Uint lastID = 0;
 #endif
 
-#define INDEX_UPDATE_SKIP 32
-
 
 
 objecttype* objecttype::update(){
-  
+
   #ifdef DEBUG_OBJECTTYPE
   fprintf(stderr,"Update for #%u.\n",idNum);
   #endif
-  
+
   double speedSqrd = xChange * xChange + yChange * yChange;
-  
+
   if(speedSqrd > MAX_SPEED * MAX_SPEED){
     // the object is assumed to pick up on this at a latter time
     isDead = true;
-    
+
     #ifdef DEBUG_OBJECTTYPE
     fprintf(stderr,"Object #%u is dead due to speed of %f.\n",idNum,speedSqrd);
     #endif
@@ -29,27 +27,24 @@ objecttype* objecttype::update(){
     xCoordinate += xChange;
     yCoordinate += yChange;
   }
-  
-  if( _timestamp % INDEX_UPDATE_SKIP == sectorUpdateWhen ){
-    
-    // map our coordinates to a sector
-    xSectorIndex = ((int)xCoordinate / SECTOR_SIZE) % NUM_SECTORS_PER_SIDE;
-    ySectorIndex = ((int)yCoordinate / SECTOR_SIZE) % NUM_SECTORS_PER_SIDE;
-    
-    // wall bounce
-    collideWithEdges();
 
-    // a system by which things can be visible based on light
-    // so visibility is based on radius, distance from the start, and some visibility property
-    // conceptually a white object might have a higher baseVisibility, and "stealth" could have a low one
-    // of course this fails to take into account light vs dark side
-    visibilityFactor = _sectors[xSectorIndex][ySectorIndex].brightness * baseVisibility / radius;
-  }
-  
+  // map our coordinates to a sector
+  xSectorIndex = ((int)xCoordinate / SECTOR_SIZE) % NUM_SECTORS_PER_SIDE;
+  ySectorIndex = ((int)yCoordinate / SECTOR_SIZE) % NUM_SECTORS_PER_SIDE;
+
+  // wall bounce
+  collideWithEdges();
+
   // some things aren't safe if we are somehow out of bounds
   setInBounds();
   if( inBounds ) gravitate();
-  
+
+  // a system by which things can be visible based on light
+  // so visibility is based on radius, distance from the star, and some visibility property
+  // conceptually a white object might have a higher baseVisibility, and "stealth" could have a low one
+  // of course this fails to take into account light vs dark side
+  visibility = _sectors[xSectorIndex][ySectorIndex].brightness * baseVisibility * radius;
+
   return next;
 }
 
@@ -69,8 +64,8 @@ objecttype* objecttype::sectorUpdate(){
 
     // make it possible to players/AIs to notice the object with sensors and scanners
     if( _timestamp % AI_UPDATE_DIVISOR == 0 ){    // AI update on some physics updates
-      _radar[xSectorIndex][ySectorIndex][_radarNew].visibilitySum += visibilityFactor;
-      _radar[xSectorIndex][ySectorIndex][_radarNew].detectabilitySum += detectabilityFactor;
+      _radar[xSectorIndex][ySectorIndex][_radarNew].visibilitySum += visibility;
+      _radar[xSectorIndex][ySectorIndex][_radarNew].detectabilitySum += detectability;
       _radar[xSectorIndex][ySectorIndex][_radarNew].radiusSum += radius;
       _radar[xSectorIndex][ySectorIndex][_radarNew].weightedXChange += radius * xChange;
       _radar[xSectorIndex][ySectorIndex][_radarNew].weightedYChange += radius * yChange;
@@ -254,7 +249,7 @@ void objecttype::moveToDead(){
 
 // load basic properties of this object into a Lua table, in the given Lua state handle
 void objecttype::asLuaTable(lua_State *targetL){
-  lua_createtable(targetL, 0, 6);
+  lua_createtable(targetL, 0, 7);   // expect 7 hash-indexed items
 
   lua_pushnumber(targetL, xCoordinate);
   lua_setfield(targetL, -2, "x");
@@ -271,11 +266,11 @@ void objecttype::asLuaTable(lua_State *targetL){
   lua_pushnumber(targetL, g());     // how much this object attracts not-massive things
   lua_setfield(targetL, -2, "g");   // divide by distance squared to get acceleration per DT
 
-  lua_pushnumber(targetL, detectabilityFactor);
-  lua_setfield(targetL, -2, "detectabilityFactor");
+  lua_pushnumber(targetL, detectability);
+  lua_setfield(targetL, -2, "detectability");
 
-  lua_pushnumber(targetL, visibilityFactor);
-  lua_setfield(targetL, -2, "visibilityFactor");
+  lua_pushnumber(targetL, visibility);
+  lua_setfield(targetL, -2, "visibility");
 
   if(lua_type(targetL,-1) != LUA_TTABLE){
     fprintf(stderr,"The top of the stack has type (should have table): %d\n", lua_type(targetL,-1));
@@ -298,10 +293,6 @@ void objecttype::basicInit(){
   ySectorIndex = (int)yCoordinate / SECTOR_SIZE;
   
   isDead = false;
-  
-  // select a random number between 0 and INDEX_UPDATE_SKIP which
-  //   tells us when this object does certain updates
-  sectorUpdateWhen = (unsigned int)((double)INDEX_UPDATE_SKIP * (double)rand() / ( (double)RAND_MAX+1.0 ));
   
   #ifdef DEBUG_OBJECTTYPE
   idNum = lastID;
@@ -385,45 +376,52 @@ void objecttype::drawRadius(bool alreadyTranslated){
 void objecttype::drawLabel(bool alreadyTranslated, double R, double G, double B){
   float xShift = 0;
   float yShift = 0;
-  
+
   if(!alreadyTranslated){
     glPushMatrix();
-    
+
     xShift = xCoordinate - *_x;
     yShift = yCoordinate - *_y;
-  
+
     glTranslatef(xShift , yShift , 0.0);
   }
-  
+
+  xShift += radius;
+  yShift += 80;
+
   int sectorX = (int)xCoordinate / SECTOR_SIZE;
   if(sectorX == NUM_SECTORS_PER_SIDE) sectorX = NUM_SECTORS_PER_SIDE - 1;
   int sectorY = (int)yCoordinate / SECTOR_SIZE;
   if(sectorY == NUM_SECTORS_PER_SIDE) sectorY = NUM_SECTORS_PER_SIDE - 1;
-  
+
   char buf[30];
-  
+
   glEnable(GL_BLEND);
   glColor4f(R,G,B,0.85);
-  
+
   sprintf(buf,"x:  %.2f",xCoordinate);
-  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift+65);
+  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift);
   sprintf(buf,"y:  %.2f",yCoordinate);
-  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift+45);
+  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift-20);
   sprintf(buf,"dx: %.2f",xChange/DT);
-  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift+25);
+  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift-40);
   sprintf(buf,"dy: %.2f",yChange/DT);
-  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift+5);
+  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift-60);
   sprintf(buf,"ax: %.2f",_sectors[sectorX][sectorY].xAccel/DT/DT);
-  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift-15);
+  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift-80);
   sprintf(buf,"ay: %.2f",_sectors[sectorX][sectorY].yAccel/DT/DT);
-  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift-35);
+  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift-100);
   sprintf(buf,"m:  %.1f",mass);
-  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift-55);
+  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift-120);
   sprintf(buf,"r:  %.0f",radius);
-  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift-75);
-    
+  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift-140);
+  sprintf(buf,"visibility:  %.2f",visibility);
+  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift-160);
+  sprintf(buf,"detectability:  %.0f",detectability);
+  printStringToRight(FONT_SMALL,false,&buf[0],xShift,yShift-180);
+
   glDisable(GL_BLEND);
-  
+
   if(!alreadyTranslated){
     glPopMatrix();
   }

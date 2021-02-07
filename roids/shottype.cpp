@@ -164,16 +164,14 @@ shottype::shottype(shotorigintype shotorigin, double lAngle, shotnametype name, 
       mSecLeft = 1000;
       break;
   }
-  
+
   basicInit();
-  
+
   collisionModifier = CATEGORY_SHOT;
   nameString = "Shot";
-  
-  baseVisibility = 1;
-  detectabilityFactor = 1 * radius;
-  
-  //fprintf(stderr,"Shot %d made.\n",idNum);
+
+  baseVisibility = 1;           // a measure of how much illumination makes the object visible (for example color)
+  detectability = 1 * radius;   // how apparent it is to radar-like scanning
 }
 
 

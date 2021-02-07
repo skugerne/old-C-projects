@@ -70,8 +70,8 @@ class objecttype {
     double m(){return mass;}
     double g(){if(hasGravity){return DT * DT * GRAVITY_CONST * mass;}else{return 0.0;}}
     const char* name(){return nameString;}
-    double getDetectability(){return detectabilityFactor;}
-    double getVisibility(){return visibilityFactor;}
+    double getDetectability(){return detectability;}
+    double getVisibility(){return visibility;}
     objectcategorytype getCollisionMod(){return collisionModifier;}
     double virtual getWarhead(objectcategorytype) = 0;
     bool getDead(){return isDead;}
@@ -130,8 +130,9 @@ class objecttype {
     double radius;
     bool hasGravity;
 
-    double visibilityFactor, baseVisibility;
-    double detectabilityFactor;
+    float baseVisibility;  // a measure of how much illumination makes the object visible (for example color)
+    float visibility;      // how apparent it is to camera-like sensing, effected by size and distance to a star
+    float detectability;   // how apparent it is to radar-like scanning
 };
 
 

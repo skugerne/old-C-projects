@@ -28,17 +28,19 @@ alienwandertype::alienwandertype(double X, double Y){
   weaponOn[0] = false;
   weaponOn[1] = false;
   weaponOn[2] = false;
-  
-  baseVisibility = 100000;
-  detectabilityFactor = 1 * radius;
-  
+
+  baseVisibility = 1;           // a measure of how much illumination makes the object visible (for example color)
+  detectability = 1 * radius;   // how apparent it is to radar-like scanning
+
+  engineGlow = 0;
+  shieldGlow = 0;
   weaponGlow[0] = 0;
   weaponLastFired[0] = 0;
   weaponGlow[1] = 0;
   weaponLastFired[1] = 0;
   weaponGlow[2] = 0;
   weaponLastFired[2] = 0;
-  
+
   shieldPoints = 30;
   shieldGlow = 0;
 }
